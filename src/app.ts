@@ -7,7 +7,10 @@ import bodyparser from 'koa-bodyparser'
 import router from './routes'
 import { RouterContext } from '@koa/router'
 config({
-  path: path.join(__dirname, `../.env.${process.env.NODE_ENV}`),
+  path: path.join(
+    __dirname,
+    `../.env.${process.env.NODE_ENV || 'development'}`
+  ),
 })
 
 const PORT = process.env.PORT || 3000
@@ -17,6 +20,7 @@ app.use(async (ctx: BaseContext & RouterContext, next: Next) => {
   try {
     await next()
   } catch (err) {
+    console.log('In here too')
     ctx.status = err.status || 500
     ctx.body = err.message
     ctx.app.emit('error', err, ctx)
