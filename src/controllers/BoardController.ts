@@ -22,6 +22,20 @@ enum Visibility {
 }
 
 class BoardController {
+  static async index(ctx: Context) {
+    try {
+      const boards = await knex('boards').where({
+        user_id: ctx.state.user.id,
+      })
+
+      response(ctx, 200, {
+        data: boards,
+      })
+    } catch (e) {
+      console.log(e)
+      ctx.throw(400, 'Bad Request')
+    }
+  }
   /**
    *
    * @param {Context} ctx
