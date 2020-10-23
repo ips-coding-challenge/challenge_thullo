@@ -60,6 +60,28 @@ describe('Boards', () => {
     res.text.should.equal('You already have a board with this name')
   })
 
+  it('should fetch all the boards for a user', async () => {
+    const user = await createUser()
+    const board = await createBoard(user, 'Board')
+
+    const res = await chai
+      .request(server)
+      .get('/api/boards')
+      .set('Authorization', 'Bearer ' + (await generateJwt(user)))
+
+    res.status.should.equal(200)
+    res.body.data.length.should.equal(1)
+    res.body.data[0].should.include.keys(
+      'id',
+      'name',
+      'cover',
+      'visibility',
+      'user_id',
+      'created_at',
+      'updated_at'
+    )
+  })
+
   it('should throw validation error when creating a board', async () => {})
 
   it('should authorize only the boards owner to update a board', async () => {})
