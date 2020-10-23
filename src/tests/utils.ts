@@ -19,6 +19,25 @@ export const createUser = async (
   return user
 }
 
+export const createBoard = async (
+  user,
+  name,
+  visibility = 'private',
+  cover = 'http://image.com',
+  description = null
+) => {
+  const [board] = await knex('boards')
+    .insert({
+      name,
+      visibility,
+      cover,
+      user_id: user.id,
+      description,
+    })
+    .returning('*')
+  return board
+}
+
 export const generateJwt = async (user) => {
   return jwt.sign(
     {

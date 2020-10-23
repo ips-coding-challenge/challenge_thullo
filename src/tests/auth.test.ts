@@ -1,5 +1,4 @@
 import { expect } from 'chai'
-import { createSecureContext } from 'tls'
 import { knex, server, chai, should } from './setup'
 import { createUser, generateJwt } from './utils'
 
