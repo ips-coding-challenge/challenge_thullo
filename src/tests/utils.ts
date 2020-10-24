@@ -14,7 +14,7 @@ export const createUser = async (
       email,
       password: hash,
     })
-    .returning(['id', 'username', 'email', 'password'])
+    .returning(['id', 'username', 'email', 'avatar'])
 
   return user
 }
@@ -36,6 +36,14 @@ export const createBoard = async (
     })
     .returning('*')
   return board
+}
+
+export const createMember = async (user, board, role = 'user') => {
+  return await knex('board_user').insert({
+    board_id: board.id,
+    user_id: user.id,
+    role,
+  })
 }
 
 export const generateJwt = async (user) => {

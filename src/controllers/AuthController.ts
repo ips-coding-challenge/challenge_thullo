@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import knex from '../db/connection'
 import Joi, { ValidationError } from '@hapi/joi'
-import { response, validationError } from '../utils/utils'
+import { generateToken, response, validationError } from '../utils/utils'
 
 const loginSchema = Joi.object().keys({
   email: Joi.string().email().required(),
@@ -39,21 +39,14 @@ class AuthController {
         .where({
           email: data.email,
         })
-        .select('id', 'username', 'email', 'password')
+        .select('id', 'username', 'email', 'password', 'avatar')
 
       if (user) {
         const isValid = await bcrypt.compare(data.password, user.password)
-        console.log('isValid', isValid)
         if (isValid) {
-          const token = jwt.sign(
-            {
-              data: user,
-            },
-            process.env.JWT_SECRET,
-            { expiresIn: '7d' } // 7 days
-          )
-
           delete user.password
+
+          const token = generateToken(user)
 
           response(ctx, 200, {
             data: {
@@ -93,15 +86,9 @@ class AuthController {
           email: data.email,
           password: hash,
         })
-        .returning(['id', 'username', 'email'])
+        .returning(['id', 'username', 'email', 'avatar'])
 
-      const token = jwt.sign(
-        {
-          data: user,
-        },
-        process.env.JWT_SECRET,
-        { expiresIn: '7d' } // 7 days
-      )
+      const token = generateToken(user)
 
       response(ctx, 201, {
         data: {
