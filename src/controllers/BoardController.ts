@@ -24,8 +24,36 @@ enum Visibility {
 class BoardController {
   static async index(ctx: Context) {
     try {
-      const boards = await knex('boards').where({
+      // Fetch all the boardsIDs where the user is a member
+      const boardsId = await knex('board_user').pluck('board_id').where({
         user_id: ctx.state.user.id,
+      })
+
+      //Fetch all the boards
+      const boards = await knex('boards')
+        .where({
+          'boards.user_id': ctx.state.user.id,
+        })
+        .orWhereIn('boards.id', boardsId)
+        .select('boards.*')
+
+      const members = await knex('board_user')
+        .innerJoin('users', 'users.id', '=', 'board_user.user_id')
+        .whereIn(
+          'board_id',
+          boards.map((b) => b.id)
+        )
+        .select('users.id', 'username', 'avatar', 'board_user.board_id')
+        .groupBy('board_user.board_id', 'users.id')
+
+      // add members for each board
+      boards.forEach((board) => {
+        board.members = []
+        members.forEach((m) => {
+          if (m.board_id === board.id) {
+            board.members.push(m)
+          }
+        })
       })
 
       response(ctx, 200, {
