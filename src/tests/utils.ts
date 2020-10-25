@@ -46,6 +46,16 @@ export const createMember = async (user, board, role = 'user') => {
   })
 }
 
+export const createList = async (name, board) => {
+  const [list] = await knex('lists')
+    .insert({
+      name,
+      board_id: board.id,
+    })
+    .returning('*')
+  return list
+}
+
 export const generateJwt = async (user) => {
   return jwt.sign(
     {

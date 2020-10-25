@@ -1,4 +1,5 @@
 import { ValidationError } from '@hapi/joi'
+import knex from '../db/connection'
 import { Context } from 'koa'
 import jwt from 'jsonwebtoken'
 
@@ -19,6 +20,20 @@ export const generateToken = (user) => {
     { expiresIn: '7d' } // 7 days
   )
   return token
+}
+
+export const can = async (ctx: Context, boardId: number) => {
+  const [isOwner] = await knex('boards')
+    .where({ id: boardId })
+    .andWhere({ user_id: ctx.state.user.id })
+
+  const [isMember] = await knex('board_user')
+    .where({ board_id: boardId })
+    .andWhere({
+      user_id: ctx.state.user.id,
+    })
+
+  return isOwner || isMember
 }
 
 export const validationError = (e: ValidationError) => {
