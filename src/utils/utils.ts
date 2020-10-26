@@ -33,6 +33,9 @@ export const can = async (ctx: Context, boardId: number) => {
       user_id: ctx.state.user.id,
     })
 
+  // console.log('isOwner', isOwner)
+  // console.log('isMember', isMember)
+  // console.log((isOwner || isMember) !== undefined)
   return isOwner || isMember
 }
 

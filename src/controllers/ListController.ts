@@ -71,25 +71,6 @@ class ListController {
         response(ctx, 201, {
           data: list,
         })
-        // if (type === 'create') {
-
-        // } else if (type === 'update') {
-        //   const { id } = ctx.query
-        //   if (!id) {
-        //     return response(ctx, 400, 'list ID is missing')
-        //   }
-        //   const [list] = await knex('lists')
-        //     .where({ id })
-        //     .andWhere({ board_id: data.board_id })
-        //     .update({
-        //       name: data.name,
-        //     })
-        //     .returning('*')
-
-        //   response(ctx, 200, {
-        //     data: list,
-        //   })
-        // }
       } else {
         return response(ctx, 403, 'Not allowed')
       }
