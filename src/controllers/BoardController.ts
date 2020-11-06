@@ -1,7 +1,7 @@
 import { Context } from 'koa'
 import Joi, { ValidationError } from '@hapi/joi'
 import { knex } from '../tests/setup'
-import { response, validationError } from '../utils/utils'
+import { can, response, validationError } from '../utils/utils'
 
 const createSchema = Joi.object().keys({
   name: Joi.string().min(2).required(),
@@ -69,6 +69,27 @@ class BoardController {
     } catch (e) {
       console.log(e)
       ctx.throw(400, 'Bad Request')
+    }
+  }
+
+  static async show(ctx: Context) {
+    try {
+      const { id } = ctx.params
+      const [board] = await knex('boards').where('id', id)
+
+      if (!board) {
+        return response(ctx, 404, 'Board not found')
+      }
+
+      if (await can(ctx, id)) {
+        response(ctx, 200, {
+          data: board,
+        })
+      } else {
+        response(ctx, 403, 'Not allowed')
+      }
+    } catch (e) {
+      console.log('Show Board Error', e)
     }
   }
   /**
