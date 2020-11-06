@@ -31,11 +31,12 @@ class BoardController {
 
       //Fetch all the boards
       const boards = await knex('boards')
+        .innerJoin('users', 'users.id', '=', 'boards.user_id')
         .where({
           'boards.user_id': ctx.state.user.id,
         })
         .orWhereIn('boards.id', boardsId)
-        .select('boards.*')
+        .select('boards.*', 'users.username')
 
       const members = await knex('board_user')
         .innerJoin('users', 'users.id', '=', 'board_user.user_id')
@@ -43,7 +44,13 @@ class BoardController {
           'board_id',
           boards.map((b) => b.id)
         )
-        .select('users.id', 'username', 'avatar', 'board_user.board_id')
+        .select(
+          'users.id',
+          'username',
+          'avatar',
+          'email',
+          'board_user.board_id'
+        )
         .groupBy('board_user.board_id', 'users.id')
 
       // add members for each board
