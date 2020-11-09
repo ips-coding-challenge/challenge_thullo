@@ -138,6 +138,38 @@ class ListController {
       }
     }
   }
+
+  static async delete(ctx: Context) {
+    try {
+      const data = <ListInput>ctx.request.body
+
+      const [board] = await knex('boards').where({
+        id: data.board_id,
+      })
+
+      if (!board) {
+        return response(ctx, 404, 'Board not found')
+      }
+
+      if (await can(ctx, board.id)) {
+        const { id } = ctx.params
+        if (!id) {
+          return response(ctx, 400, 'list ID is missing')
+        }
+        const list = await knex('lists')
+          .where({ id })
+          .andWhere({ board_id: data.board_id })
+          .delete()
+
+        response(ctx, 204, {})
+      } else {
+        return response(ctx, 403, 'Not allowed')
+      }
+    } catch (e) {
+      console.log('Store list error', e)
+      ctx.throw(400, 'Bad request')
+    }
+  }
 }
 
 export default ListController

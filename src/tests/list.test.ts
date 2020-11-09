@@ -134,6 +134,23 @@ describe('Lists', () => {
     res.status.should.equal(422)
   })
 
+  it('should delete a list', async () => {
+    const user = await createUser()
+    const board = await createBoard(user, 'Board')
+    const list = await createList('First list', board)
+
+    const res = await chai
+      .request(server)
+      .delete(`/api/lists/${list.id}`)
+      .send({ board_id: board.id })
+      .set('Authorization', 'Bearer ' + (await generateJwt(user)))
+
+    res.status.should.equal(204)
+
+    const lists = await knex('lists').where('board_id', board.id)
+    lists.length.should.equal(0)
+  })
+
   afterEach(() => {
     return knex.migrate.rollback()
   })

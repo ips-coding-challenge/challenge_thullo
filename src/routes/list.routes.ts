@@ -6,5 +6,6 @@ const router = new Router()
 router.get('/lists', jwt, ListController.index)
 router.post('/lists', jwt, ListController.store)
 router.put('/lists/:id', jwt, ListController.update)
+router.delete('/lists/:id', jwt, ListController.delete)
 
 export default router
