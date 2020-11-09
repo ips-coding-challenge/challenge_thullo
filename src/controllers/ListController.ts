@@ -27,9 +27,11 @@ class ListController {
       }
 
       if (await can(ctx, board_id)) {
-        const lists = await knex('lists').where({
-          board_id: +board_id,
-        })
+        const lists = await knex('lists')
+          .where({
+            board_id: +board_id,
+          })
+          .orderBy('id')
 
         response(ctx, 200, {
           data: lists,
