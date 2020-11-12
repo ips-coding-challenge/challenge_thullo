@@ -33,6 +33,21 @@ class ListController {
           })
           .orderBy('id')
 
+        // Fetch the tasks belongings to those lists
+        const listIds = lists.map((l) => l.id)
+        const tasks = await knex('tasks').whereIn('list_id', listIds)
+
+        lists.forEach((l) => {
+          l.tasks = []
+          tasks.map((task) => {
+            if (task.list_id === l.id) {
+              l.tasks.push(task)
+            }
+          })
+        })
+
+        console.log('lists', lists)
+
         response(ctx, 200, {
           data: lists,
         })
