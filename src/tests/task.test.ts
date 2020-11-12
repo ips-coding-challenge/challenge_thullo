@@ -1,5 +1,11 @@
 import { knex, server, chai } from './setup'
-import { createBoard, createList, createUser, generateJwt } from './utils'
+import {
+  createBoard,
+  createList,
+  createUser,
+  createTask,
+  generateJwt,
+} from './utils'
 
 describe('Tasks', () => {
   beforeEach(async () => {
@@ -160,6 +166,28 @@ describe('Tasks', () => {
       })
 
     res.status.should.equal(403)
+  })
+
+  it.only('should update a task for a list', async () => {
+    const user = await createUser()
+    const board = await createBoard(user, 'Board')
+    const list = await createList('List', board)
+    const task = await createTask('Task 1', user, board, list)
+
+    const res = await chai
+      .request(server)
+      .put(`/api/tasks/${task.id}`)
+      .set('Authorization', 'Bearer ' + (await generateJwt(user)))
+      .send({
+        title: 'Task 1 updated!',
+        board_id: board.id,
+        list_id: list.id,
+        position: task.position,
+      })
+
+    res.status.should.equal(201)
+    res.body.data.should.include.keys('title')
+    res.body.data.title.should.equal('Task 1 updated!')
   })
 
   afterEach(() => {
