@@ -168,7 +168,7 @@ describe('Tasks', () => {
     res.status.should.equal(403)
   })
 
-  it.only('should update a task for a list', async () => {
+  it('should update a task for a list', async () => {
     const user = await createUser()
     const board = await createBoard(user, 'Board')
     const list = await createList('List', board)
