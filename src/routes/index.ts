@@ -3,7 +3,7 @@ import authRoutes from './auth.routes'
 import boardRoutes from './board.routes'
 import listRoutes from './list.routes'
 import boardUserRoutes from './board_user.routes'
-import taskRoutes from './task.route'
+import taskRoutes from './task.routes'
 
 const router = new Router({
   prefix: '/api',
