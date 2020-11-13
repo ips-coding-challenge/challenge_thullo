@@ -35,7 +35,9 @@ class ListController {
 
         // Fetch the tasks belongings to those lists
         const listIds = lists.map((l) => l.id)
-        const tasks = await knex('tasks').whereIn('list_id', listIds)
+        const tasks = await knex('tasks')
+          .whereIn('list_id', listIds)
+          .orderBy('position')
 
         lists.forEach((l) => {
           l.tasks = []
@@ -86,7 +88,7 @@ class ListController {
           .returning('*')
 
         response(ctx, 201, {
-          data: list,
+          data: { ...list, tasks: [] },
         })
       } else {
         return response(ctx, 403, 'Not allowed')
