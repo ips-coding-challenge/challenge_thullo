@@ -112,7 +112,7 @@ class BoardController {
         .returning('*')
 
       response(ctx, 201, {
-        data: board,
+        data: { ...board, members: [] },
       })
     } catch (e) {
       console.log(`E`, e)
