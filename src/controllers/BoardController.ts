@@ -9,6 +9,10 @@ const createSchema = Joi.object().keys({
   cover: Joi.string().uri().optional(),
 })
 
+const updateSchema = Joi.object().keys({
+  visibility: Joi.string().valid('private', 'public').optional(),
+})
+
 interface BoardInput {
   name: string
   visibility: Visibility
@@ -22,6 +26,10 @@ enum Visibility {
 }
 
 class BoardController {
+  /**
+   * Fetch all boards
+   * @param {Context} ctx
+   */
   static async index(ctx: Context) {
     try {
       // Fetch all the boardsIDs where the user is a member
@@ -36,6 +44,7 @@ class BoardController {
           'boards.user_id': ctx.state.user.id,
         })
         .orWhereIn('boards.id', boardsId)
+        .orderBy('created_at', 'desc')
         .select('boards.*', 'users.username')
 
       const members = await knex('board_user')
@@ -72,6 +81,10 @@ class BoardController {
     }
   }
 
+  /**
+   * Fetch a single board by id
+   * @param {Context} ctx
+   */
   static async show(ctx: Context) {
     try {
       const { id } = ctx.params
@@ -93,7 +106,7 @@ class BoardController {
     }
   }
   /**
-   *
+   * Create a new board
    * @param {Context} ctx
    */
   static async store(ctx: Context) {
@@ -114,6 +127,49 @@ class BoardController {
       response(ctx, 201, {
         data: { ...board, members: [] },
       })
+    } catch (e) {
+      console.log(`E`, e)
+      if (e instanceof ValidationError) {
+        ctx.throw(422, validationError(e))
+      } else if (e.code === '23505') {
+        ctx.throw(422, {
+          field: 'name',
+          message: `You already have a board with this name`,
+        })
+      } else {
+        ctx.throw(400, 'Bad Request')
+      }
+    }
+  }
+
+  static async update(ctx: Context) {
+    try {
+      await updateSchema.validateAsync(ctx.request.body)
+
+      const boardId = +ctx.params.id
+
+      const data = <BoardInput>ctx.request.body
+
+      if (Object.keys(data).length === 0) {
+        return response(ctx, 422, 'Invalid data')
+      }
+
+      console.log('data', data)
+
+      if (await can(ctx, boardId)) {
+        const [board] = await knex('boards')
+          .where('id', boardId)
+          .update({
+            visibility: data.visibility,
+          })
+          .returning('*')
+
+        response(ctx, 201, {
+          data: { ...board, members: [] },
+        })
+      } else {
+        response(ctx, 403, 'Not allowed')
+      }
     } catch (e) {
       console.log(`E`, e)
       if (e instanceof ValidationError) {

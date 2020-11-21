@@ -113,11 +113,58 @@ describe('Boards', () => {
     )
   })
 
+  it('should authorize the boards owner to update a board', async () => {
+    const user = await createUser()
+    const board = await createBoard(user, 'Board')
+
+    const res = await chai
+      .request(server)
+      .put(`/api/boards/${board.id}`)
+      .send({
+        visibility: 'public',
+      })
+      .set('Authorization', 'Bearer ' + (await generateJwt(user)))
+
+    res.status.should.equal(201)
+    res.body.data.visibility.should.equal('public')
+
+    const [newBoard] = await knex('boards').where('id', board.id)
+    newBoard.visibility.should.equal('public')
+  })
+
+  it('should not authorize to update a board with no data provided', async () => {
+    const user = await createUser()
+    const board = await createBoard(user, 'Board')
+
+    const res = await chai
+      .request(server)
+      .put(`/api/boards/${board.id}`)
+      .send({})
+      .set('Authorization', 'Bearer ' + (await generateJwt(user)))
+
+    res.status.should.equal(422)
+  })
+
+  it.only('should not authorize a simple member of the board to update a board', async () => {
+    const user = await createUser()
+    const member = await createUser('member', 'member@test.fr')
+    const board = await createBoard(user, 'Board')
+
+    const res = await chai
+      .request(server)
+      .put(`/api/boards/${board.id}`)
+      .send({
+        visibility: 'public',
+      })
+      .set('Authorization', 'Bearer ' + (await generateJwt(member)))
+
+    res.status.should.equal(403)
+
+    const [newBoard] = await knex('boards').where('id', board.id)
+    newBoard.visibility.should.equal('private')
+  })
+
   it('should throw validation error when creating a board', async () => {})
-
-  it('should authorize only the boards owner to update a board', async () => {})
-
-  it('should not authorize anonymous user to update a board', async () => {})
 
   it('should delete a board', async () => {})
 
