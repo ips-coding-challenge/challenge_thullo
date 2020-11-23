@@ -33,9 +33,21 @@ export const can = async (ctx: Context, boardId: number) => {
       user_id: ctx.state.user.id,
     })
 
-  // console.log('isOwner', isOwner)
-  // console.log('isMember', isMember)
-  // console.log((isOwner || isMember) !== undefined)
+  return isOwner || isMember
+}
+
+export const isAdmin = async (ctx: Context, boardId: number) => {
+  const [isOwner] = await knex('boards').where({
+    id: boardId,
+    user_id: ctx.state.user.id,
+  })
+
+  const [isMember] = await knex('board_user').where({
+    board_id: boardId,
+    user_id: ctx.state.user.id,
+    role: 'admin',
+  })
+
   return isOwner || isMember
 }
 

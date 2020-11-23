@@ -1,6 +1,7 @@
 import knex from '../db/connection'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import { nanoid } from 'nanoid'
 
 export const createUser = async (
   username = 'admin',
@@ -74,6 +75,23 @@ export const createTask = async (
     .returning('*')
 
   return task
+}
+
+export const createInvitation = async (
+  user,
+  board,
+  created_at = new Date().toISOString(),
+  token = nanoid()
+) => {
+  const [invitation] = await knex('invitations')
+    .insert({
+      board_id: board.id,
+      user_id: user.id,
+      token,
+      created_at,
+    })
+    .returning('*')
+  return invitation
 }
 
 export const generateJwt = async (user) => {
