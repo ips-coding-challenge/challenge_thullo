@@ -10,8 +10,34 @@ const createSchema = Joi.object().keys({
 })
 
 class InvitationController {
-  static async show(ctx: Context) {}
+  /**
+   * Fetch the invitations for the connected user
+   * @param ctx
+   */
+  static async index(ctx: Context) {
+    try {
+      const invitations = await knex('invitations')
+        .where({
+          user_id: ctx.state.user.id,
+        })
+        .andWhere(
+          'created_at',
+          '>',
+          new Date(Date.now() - 60000 * 60 * 24).toISOString()
+        )
 
+      response(ctx, 200, {
+        data: invitations,
+      })
+    } catch (e) {
+      console.log('e', e)
+    }
+  }
+
+  /**
+   * Send an invitation
+   * @param ctx
+   */
   static async store(ctx: Context) {
     try {
       await createSchema.validateAsync(ctx.request.body)
@@ -83,6 +109,10 @@ class InvitationController {
     }
   }
 
+  /**
+   * Valid the invitation
+   * @param ctx
+   */
   static async validToken(ctx: Context) {
     const { token } = ctx.params
     try {
