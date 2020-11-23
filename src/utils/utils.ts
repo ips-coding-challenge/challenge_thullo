@@ -8,6 +8,17 @@ export const response = (ctx: Context, status = 200, data) => {
   ctx.body = data
 }
 
+export const userSelect = () => {
+  return [
+    'users.id',
+    'users.username',
+    'users.email',
+    'users.avatar',
+    'users.created_at',
+    'users.updated_at',
+  ]
+}
+
 export const generateToken = (user) => {
   if ('password' in user) {
     delete user.password

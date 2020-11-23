@@ -17,13 +17,24 @@ class InvitationController {
   static async index(ctx: Context) {
     try {
       const invitations = await knex('invitations')
+        .innerJoin('boards', 'boards.id', '=', 'invitations.board_id')
+        .innerJoin('users', 'users.id', '=', 'boards.user_id')
         .where({
-          user_id: ctx.state.user.id,
+          'invitations.user_id': ctx.state.user.id,
         })
         .andWhere(
-          'created_at',
+          'invitations.created_at',
           '>',
           new Date(Date.now() - 60000 * 60 * 24).toISOString()
+        )
+        .select(
+          'invitations.id',
+          'invitations.token',
+          'invitations.board_id',
+          'invitations.user_id',
+          'users.username as owner_name',
+          'boards.cover as board_cover',
+          'boards.name as board_name'
         )
 
       response(ctx, 200, {
@@ -133,6 +144,8 @@ class InvitationController {
         board_id: invitation.board_id,
         user_id: ctx.state.user.id,
       })
+
+      await knex('invitations').where('id', invitation.id).delete()
 
       response(ctx, 200, {})
     } catch (e) {

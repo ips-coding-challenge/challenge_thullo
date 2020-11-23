@@ -1,7 +1,8 @@
 import { Context } from 'koa'
 import Joi, { ValidationError } from '@hapi/joi'
 import { knex } from '../tests/setup'
-import { can, response, validationError } from '../utils/utils'
+import { can, response, userSelect, validationError } from '../utils/utils'
+import { userInfo } from 'os'
 
 const createSchema = Joi.object().keys({
   name: Joi.string().min(2).required(),
@@ -95,8 +96,25 @@ class BoardController {
       }
 
       if (await can(ctx, id)) {
+        const members = await knex('board_user')
+          .innerJoin('users', 'users.id', '=', 'board_user.user_id')
+          .where({
+            board_id: board.id,
+          })
+          .select(userSelect())
+
+        const [owner] = await knex('users')
+          .where({
+            'users.id': board.user_id,
+          })
+          .select(userSelect())
+
+        console.log('owner', owner)
         response(ctx, 200, {
-          data: board,
+          data: {
+            ...board,
+            members: members.concat(owner) || [].concat(owner),
+          },
         })
       } else {
         response(ctx, 403, 'Not allowed')
