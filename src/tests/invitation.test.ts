@@ -187,6 +187,44 @@ describe('Invitations', () => {
     res.status.should.equal(404)
   })
 
+  it('should fetch the invitations for a user', async () => {
+    const admin = await createUser()
+    const another = await createUser('another', 'another@test.fr')
+    const board = await createBoard(admin, 'Board')
+    const invitation = await createInvitation(another, board)
+
+    const res = await chai
+      .request(server)
+      .get(`/api/invitations`)
+      .set('Authorization', 'Bearer ' + (await generateJwt(another)))
+
+    res.status.should.equal(200)
+    res.body.data.length.should.equal(1)
+  })
+
+  it('should only fetch the invitations that are not expired for a user', async () => {
+    const admin = await createUser()
+    const another = await createUser('another', 'another@test.fr')
+    const board = await createBoard(admin, 'Board')
+    const secondBoard = await createBoard(admin, 'Second Board')
+    const expiredDate = Date.now() - 60000 * 60 * 30
+    const invitation = await createInvitation(another, board)
+    const invitation2 = await createInvitation(
+      another,
+      secondBoard,
+      new Date(expiredDate).toISOString()
+    )
+
+    const res = await chai
+      .request(server)
+      .get(`/api/invitations`)
+      .set('Authorization', 'Bearer ' + (await generateJwt(another)))
+
+    res.status.should.equal(200)
+    res.body.data[0].board_id.should.equal(board.id)
+    res.body.data.length.should.equal(1)
+  })
+
   afterEach(() => {
     return knex.migrate.rollback()
   })
