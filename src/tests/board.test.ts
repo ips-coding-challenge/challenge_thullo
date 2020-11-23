@@ -145,7 +145,7 @@ describe('Boards', () => {
     res.status.should.equal(422)
   })
 
-  it.only('should not authorize a simple member of the board to update a board', async () => {
+  it('should not authorize a simple member of the board to update a board', async () => {
     const user = await createUser()
     const member = await createUser('member', 'member@test.fr')
     const board = await createBoard(user, 'Board')

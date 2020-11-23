@@ -82,6 +82,34 @@ class InvitationController {
       }
     }
   }
+
+  static async validToken(ctx: Context) {
+    const { token } = ctx.params
+    try {
+      const [invitation] = await knex('invitations').where({
+        token,
+        user_id: ctx.state.user.id,
+      })
+
+      if (!invitation) {
+        return response(ctx, 404, 'No invitation found')
+      }
+
+      if (isExpired(invitation.created_at)) {
+        return response(ctx, 400, 'The invitation has expired')
+      }
+
+      await knex('board_user').insert({
+        board_id: invitation.board_id,
+        user_id: ctx.state.user.id,
+      })
+
+      response(ctx, 200, {})
+    } catch (e) {
+      console.log('e', e)
+      response(ctx, 400, 'Bad request')
+    }
+  }
 }
 
 const isExpired = (created_at) => {

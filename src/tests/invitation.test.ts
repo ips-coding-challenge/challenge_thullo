@@ -31,7 +31,7 @@ describe('Invitations', () => {
     res.status.should.equal(204)
   })
 
-  it.only('should authorize only the admin of the board to send invitation', async () => {
+  it('should authorize only the admin of the board to send invitation', async () => {
     const admin = await createUser()
     const member = await createUser('member', 'member@test.fr')
     const another = await createUser('another', 'another@test.fr')
@@ -127,6 +127,64 @@ describe('Invitations', () => {
 
     res.status.should.equal(400)
     res.text.should.equal('This user is already a member')
+  })
+
+  it('should valid the invitation and add the user to the board', async () => {
+    const admin = await createUser()
+    const another = await createUser('another', 'another@test.fr')
+    const board = await createBoard(admin, 'Board')
+    const invitation = await createInvitation(another, board)
+
+    const res = await chai
+      .request(server)
+      .get(`/api/invitations/${invitation.token}`)
+      .set('Authorization', 'Bearer ' + (await generateJwt(another)))
+
+    const members = await knex('board_user').where({
+      user_id: another.id,
+      board_id: board.id,
+    })
+    members.length.should.equal(1)
+    res.status.should.equal(200)
+  })
+
+  it('should not valid the invitation if the invitation has expired', async () => {
+    const admin = await createUser()
+    const another = await createUser('another', 'another@test.fr')
+    const board = await createBoard(admin, 'Board')
+    const expiredDate = Date.now() - 60000 * 60 * 30
+    const invitation = await createInvitation(
+      another,
+      board,
+      new Date(expiredDate).toISOString()
+    )
+
+    const res = await chai
+      .request(server)
+      .get(`/api/invitations/${invitation.token}`)
+      .set('Authorization', 'Bearer ' + (await generateJwt(another)))
+
+    res.status.should.equal(400)
+    res.text.should.equal('The invitation has expired')
+  })
+
+  it('should not validate the invitation if the token is not valid', async () => {
+    const admin = await createUser()
+    const another = await createUser('another', 'another@test.fr')
+    const board = await createBoard(admin, 'Board')
+    const invitation = await createInvitation(another, board)
+
+    const res = await chai
+      .request(server)
+      .get(`/api/invitations/abcd`)
+      .set('Authorization', 'Bearer ' + (await generateJwt(another)))
+
+    const members = await knex('board_user').where({
+      user_id: another.id,
+      board_id: board.id,
+    })
+    members.length.should.equal(0)
+    res.status.should.equal(404)
   })
 
   afterEach(() => {
