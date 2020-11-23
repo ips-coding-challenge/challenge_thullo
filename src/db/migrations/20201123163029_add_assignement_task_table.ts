@@ -1,14 +1,12 @@
 import * as Knex from 'knex'
 
 export async function up(knex: Knex): Promise<void> {
-  return knex.schema.createTable('invitations', (table) => {
+  return knex.schema.createTable('assignment_task', (table) => {
     table.increments('id')
-    table.string('token').notNullable()
-    table.integer('board_id').unsigned().notNullable()
     table.integer('user_id').unsigned().notNullable()
-    table.timestamps(false, true)
+    table.integer('task_id').unsigned().notNullable()
 
-    table.unique(['board_id', 'user_id'])
+    table.unique(['user_id', 'task_id'])
 
     table
       .foreign('user_id')
@@ -17,13 +15,13 @@ export async function up(knex: Knex): Promise<void> {
       .onDelete('CASCADE')
 
     table
-      .foreign('board_id')
+      .foreign('task_id')
       .references('id')
-      .inTable('boards')
+      .inTable('tasks')
       .onDelete('CASCADE')
   })
 }
 
 export async function down(knex: Knex): Promise<void> {
-  return knex.raw('DROP TABLE invitations CASCADE')
+  return knex.raw('DROP TABLE assignment_task CASCADE')
 }
