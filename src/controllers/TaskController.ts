@@ -44,7 +44,7 @@ class TaskController {
           .returning('*')
 
         response(ctx, 201, {
-          data: task,
+          data: { ...task, assignedMembers: [] },
         })
       } else {
         return response(ctx, 403, 'Not allowed')
