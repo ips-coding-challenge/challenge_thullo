@@ -20,10 +20,10 @@ export async function up(knex: Knex): Promise<void> {
       .foreign('board_id')
       .references('id')
       .inTable('boards')
-      .onDelete('cascade')
+      .onDelete('CASCADE')
   })
 }
 
 export async function down(knex: Knex): Promise<void> {
-  return knex.schema.dropTable('board_user')
+  return knex.raw('DROP TABLE board_user CASCADE')
 }
