@@ -9,6 +9,10 @@ const createSchema = Joi.object().keys({
 })
 
 class AssignmentController {
+  /**
+   * Assign the board's member to the task
+   * @param ctx
+   */
   static async store(ctx: Context) {
     try {
       await createSchema.validateAsync(ctx.request.body)
@@ -42,7 +46,6 @@ class AssignmentController {
           .where('users.id', user_id)
           .select(['assignment_task.id as assignment_id', ...userSelect()])
 
-        console.log('userAssigned', userAssigned)
         response(ctx, 201, {
           data: userAssigned,
         })

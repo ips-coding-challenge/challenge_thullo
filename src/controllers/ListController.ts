@@ -1,7 +1,7 @@
 import { Context } from 'koa'
 import Joi, { ValidationError } from '@hapi/joi'
 import { knex } from '../tests/setup'
-import { can, response, validationError } from '../utils/utils'
+import { can, response, userSelect, validationError } from '../utils/utils'
 
 const createSchema = Joi.object().keys({
   name: Joi.string().min(2).required(),
@@ -39,16 +39,33 @@ class ListController {
           .whereIn('list_id', listIds)
           .orderBy('position')
 
+        const tasksIds = tasks.map((t) => t.id)
+        // Get the members assigned to that task
+        const assignedMembersToTask = await knex('assignment_task')
+          .innerJoin('users', 'users.id', '=', 'assignment_task.user_id')
+          .whereIn('assignment_task.task_id', tasksIds)
+          .select([
+            'assignment_task.id as assignment_id',
+            'assignment_task.task_id as task_id',
+            ...userSelect(),
+          ])
+
+        // Todo: Get the label assigned to that task
+
         lists.forEach((l) => {
           l.tasks = []
           tasks.map((task) => {
             if (task.list_id === l.id) {
-              l.tasks.push(task)
+              let assignedMembers = []
+              assignedMembersToTask.forEach((m) => {
+                if (m.task_id === task.id) {
+                  assignedMembers.push(m)
+                }
+              })
+              l.tasks.push({ ...task, assignedMembers })
             }
           })
         })
-
-        console.log('lists', lists)
 
         response(ctx, 200, {
           data: lists,
