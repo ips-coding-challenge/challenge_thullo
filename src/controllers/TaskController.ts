@@ -25,6 +25,29 @@ class TaskController {
    */
   static async index(ctx: Context) {}
 
+  static async show(ctx: Context) {
+    const { id } = ctx.params
+
+    try {
+      const [task] = await knex('tasks').where('id', +id)
+
+      if (!task) {
+        return response(ctx, 404, 'Task not found')
+      }
+
+      if (await can(ctx, task.board_id)) {
+      } else {
+        return response(ctx, 403, 'Not allowed')
+      }
+
+      response(ctx, 200, {
+        data: task,
+      })
+    } catch (e) {
+      console.log('e', e)
+    }
+  }
+
   /**
    * Insert a task
    * @param {Context} ctx

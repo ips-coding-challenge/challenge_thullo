@@ -190,6 +190,36 @@ describe('Tasks', () => {
     res.body.data.title.should.equal('Task 1 updated!')
   })
 
+  it('should fetch a task', async () => {
+    const user = await createUser()
+    const board = await createBoard(user, 'Board')
+    const list = await createList('List', board)
+    const task = await createTask('Task 1', user, board, list)
+
+    const res = await chai
+      .request(server)
+      .get(`/api/tasks/${task.id}`)
+      .set('Authorization', 'Bearer ' + (await generateJwt(user)))
+
+    res.status.should.equal(200)
+    res.body.data.should.include.keys('id', 'title', 'description')
+  })
+
+  it.only('should fetch a task if authorized', async () => {
+    const user = await createUser()
+    const another = await createUser('another', 'another@test.fr')
+    const board = await createBoard(user, 'Board')
+    const list = await createList('List', board)
+    const task = await createTask('Task 1', user, board, list)
+
+    const res = await chai
+      .request(server)
+      .get(`/api/tasks/${task.id}`)
+      .set('Authorization', 'Bearer ' + (await generateJwt(another)))
+
+    res.status.should.equal(403)
+  })
+
   afterEach(() => {
     return knex.migrate.rollback()
   })
