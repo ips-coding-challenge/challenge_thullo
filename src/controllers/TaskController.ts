@@ -10,6 +10,13 @@ const createTaskSchema = Joi.object().keys({
   list_id: Joi.number().required(),
 })
 
+const patchTaskSchema = Joi.object().keys({
+  board_id: Joi.number().required(),
+  title: Joi.string().min(2).optional(),
+  description: Joi.string().min(2).optional(),
+  cover: Joi.string().uri().optional(),
+})
+
 interface TaskCreateInput {
   title: string
   position: number
@@ -93,6 +100,44 @@ class TaskController {
       const data = <TaskCreateInput>ctx.request.body
 
       if (await can(ctx, data.board_id)) {
+        const [task] = await knex('tasks')
+          .where({ id: ctx.params.id })
+          .update(
+            {
+              ...data,
+            },
+            ['*']
+          )
+
+        response(ctx, 201, {
+          data: task,
+        })
+      } else {
+        return response(ctx, 403, 'Not allowed')
+      }
+    } catch (e) {
+      console.log('Store task error', e)
+      if (e instanceof ValidationError) {
+        ctx.throw(422, validationError(e))
+      }
+
+      ctx.throw(400, `Bad request`)
+    }
+  }
+
+  /**
+   * Update some field in a task (title, description, cover)
+   * @param ctx
+   */
+  static async patch(ctx: Context) {
+    try {
+      await patchTaskSchema.validateAsync(ctx.request.body)
+
+      const data = <TaskCreateInput>ctx.request.body
+
+      if (await can(ctx, data.board_id)) {
+        delete data.board_id
+
         const [task] = await knex('tasks')
           .where({ id: ctx.params.id })
           .update(
