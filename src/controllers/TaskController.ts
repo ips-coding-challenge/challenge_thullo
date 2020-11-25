@@ -1,7 +1,7 @@
 import { Context } from 'koa'
 import Joi, { ValidationError } from '@hapi/joi'
 import { knex } from '../tests/setup'
-import { can, response, validationError } from '../utils/utils'
+import { can, response, userSelect, validationError } from '../utils/utils'
 
 const createTaskSchema = Joi.object().keys({
   title: Joi.string().min(2).required(),
@@ -43,13 +43,17 @@ class TaskController {
       }
 
       if (await can(ctx, task.board_id)) {
-      } else {
-        return response(ctx, 403, 'Not allowed')
-      }
+        const assignedMembers = await knex('assignment_task')
+          .innerJoin('users', 'users.id', '=', 'assignment_task.user_id')
+          .where('task_id', task.id)
+          .select(userSelect())
 
-      response(ctx, 200, {
-        data: task,
-      })
+        response(ctx, 200, {
+          data: { ...task, assignedMembers: assignedMembers || [] },
+        })
+      } else {
+        response(ctx, 403, 'Not allowed')
+      }
     } catch (e) {
       console.log('e', e)
     }
