@@ -205,7 +205,7 @@ describe('Tasks', () => {
     res.body.data.should.include.keys('id', 'title', 'description')
   })
 
-  it.only('should fetch a task if authorized', async () => {
+  it('should fetch a task if authorized', async () => {
     const user = await createUser()
     const another = await createUser('another', 'another@test.fr')
     const board = await createBoard(user, 'Board')
