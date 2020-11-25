@@ -72,6 +72,28 @@ describe('Labels', () => {
     )
   })
 
+  it('should not authorize a random user to add label for a board', async () => {
+    const user = await createUser()
+    const another = await createUser('another', 'another@test.fr')
+    const board = await createBoard(user, 'First board')
+
+    const res = await chai
+      .request(server)
+      .post('/api/labels')
+      .send({
+        name: 'label',
+        color: '#bababa',
+        board_id: board.id,
+      })
+      .set('Authorization', 'Bearer ' + (await generateJwt(another)))
+
+    res.status.should.equal(403)
+    res.text.should.equal('Not allowed')
+
+    const label = await knex('labels').where('board_id', board.id)
+    label.length.should.equal(0)
+  })
+
   afterEach(() => {
     return knex.migrate.rollback()
   })
