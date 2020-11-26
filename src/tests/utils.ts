@@ -95,11 +95,14 @@ export const createInvitation = async (
 }
 
 export const createLabel = async (board, name = 'Label', color = '#bababa') => {
-  const [label] = await knex('labels').insert({
-    name,
-    color,
-    board_id: board.id,
-  })
+  const [label] = await knex('labels')
+    .insert({
+      name,
+      color,
+      board_id: board.id,
+    })
+    .returning('*')
+
   return label
 }
 
