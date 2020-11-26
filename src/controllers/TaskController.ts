@@ -43,13 +43,27 @@ class TaskController {
       }
 
       if (await can(ctx, task.board_id)) {
+        // Fetch the assignedMembers
         const assignedMembers = await knex('assignment_task')
           .innerJoin('users', 'users.id', '=', 'assignment_task.user_id')
           .where('task_id', task.id)
           .select(userSelect())
 
+        // Fetch the labels
+        const labels = await knex('label_task')
+          .innerJoin('labels', 'labels.id', '=', 'label_task.label_id')
+          .where('task_id', task.id)
+          .orderBy('label_task.id', 'asc')
+          .select('*')
+
+        console.log('labels', labels)
+
         response(ctx, 200, {
-          data: { ...task, assignedMembers: assignedMembers || [] },
+          data: {
+            ...task,
+            assignedMembers: assignedMembers || [],
+            labels: labels || [],
+          },
         })
       } else {
         response(ctx, 403, 'Not allowed')
@@ -78,7 +92,7 @@ class TaskController {
           .returning('*')
 
         response(ctx, 201, {
-          data: { ...task, assignedMembers: [] },
+          data: { ...task, assignedMembers: [], labels: [] },
         })
       } else {
         return response(ctx, 403, 'Not allowed')

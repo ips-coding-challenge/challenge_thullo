@@ -11,6 +11,28 @@ const createSchema = Joi.object().keys({
 
 class LabelController {
   /**
+   * Fetch the labels for a specific board
+   * @param ctx
+   */
+  static async index(ctx: Context) {
+    const { board_id } = ctx.query
+
+    try {
+      if (await can(ctx, +board_id)) {
+        const labels = await knex('labels').where('board_id', +board_id)
+
+        response(ctx, 200, {
+          data: labels,
+        })
+      } else {
+        return response(ctx, 403, 'Not allowed')
+      }
+    } catch (e) {
+      console.log('e', e)
+      ctx.throw(400, 'Bad request')
+    }
+  }
+  /**
    * Insert a new label for a board
    * @param ctx
    */
