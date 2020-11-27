@@ -47,7 +47,11 @@ class TaskController {
         const assignedMembers = await knex('assignment_task')
           .innerJoin('users', 'users.id', '=', 'assignment_task.user_id')
           .where('task_id', task.id)
-          .select(userSelect())
+          .select([
+            'assignment_task.id as assignment_id',
+            'assignment_task.task_id as task_id',
+            ...userSelect(),
+          ])
 
         // Fetch the labels
         const labels = await knex('label_task')
@@ -56,6 +60,7 @@ class TaskController {
           .orderBy('label_task.id', 'asc')
           .select('*')
 
+        console.log('assignedMembers', assignedMembers)
         console.log('labels', labels)
 
         response(ctx, 200, {
