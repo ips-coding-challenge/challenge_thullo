@@ -64,6 +64,44 @@ class AssignmentController {
       }
     }
   }
+
+  static async delete(ctx: Context) {
+    try {
+      await createSchema.validateAsync(ctx.request.body)
+
+      const { task_id, user_id } = ctx.request.body
+
+      const [task] = await knex('tasks').where('id', task_id)
+
+      if (!task) {
+        return response(ctx, 404, 'Task not found')
+      }
+
+      const [board] = await knex('boards').where('id', task.board_id)
+      if (!board) {
+        return response(ctx, 404, 'Board not found')
+      }
+
+      if (await can(ctx, board.id)) {
+        await knex('assignment_task')
+          .where({
+            task_id,
+            user_id,
+          })
+          .delete()
+
+        response(ctx, 204, {})
+      } else {
+        response(ctx, 403, 'Not Allowed')
+      }
+    } catch (e) {
+      if (e instanceof ValidationError) {
+        ctx.throw(422, validationError(e))
+      } else {
+        ctx.throw(400, 'Bad request')
+      }
+    }
+  }
 }
 
 export default AssignmentController

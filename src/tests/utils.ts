@@ -106,6 +106,17 @@ export const createLabel = async (board, name = 'Label', color = '#bababa') => {
   return label
 }
 
+export const addMemberToTask = async (user, task) => {
+  const [assignedMember] = await knex('assignment_task')
+    .insert({
+      user_id: user.id,
+      task_id: task.id,
+    })
+    .returning('*')
+
+  return assignedMember
+}
+
 export const generateJwt = async (user) => {
   return jwt.sign(
     {
