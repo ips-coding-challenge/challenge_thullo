@@ -50,10 +50,15 @@ class ListController {
             ...userSelect(),
           ])
 
-        // Todo: Get the label assigned to that task
+        // Get the label assigned to that task
         const labelAssignedToTask = await knex('label_task')
           .innerJoin('labels', 'labels.id', '=', 'label_task.label_id')
           .whereIn('label_task.task_id', tasksIds)
+          .select('*')
+
+        // Get the attachments
+        const attachmentsTask = await knex('attachment_task')
+          .whereIn('attachment_task.task_id', tasksIds)
           .select('*')
 
         lists.forEach((l) => {
@@ -62,6 +67,7 @@ class ListController {
             if (task.list_id === l.id) {
               let assignedMembers = []
               let labels = []
+              let attachments = []
               assignedMembersToTask.forEach((m) => {
                 if (m.task_id === task.id) {
                   assignedMembers.push(m)
@@ -72,7 +78,12 @@ class ListController {
                   labels.push(l)
                 }
               })
-              l.tasks.push({ ...task, assignedMembers, labels })
+              attachmentsTask.forEach((a) => {
+                if (a.task_id === task.id) {
+                  attachments.push(a)
+                }
+              })
+              l.tasks.push({ ...task, assignedMembers, labels, attachments })
             }
           })
         })

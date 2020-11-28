@@ -5,9 +5,11 @@ export async function up(knex: Knex): Promise<void> {
     table.increments('id')
     table.string('name').notNullable()
     table.string('url').notNullable()
-    table.string('format').notNullable()
+    table.string('format')
+    table.string('public_id').notNullable()
     table.integer('task_id').unsigned().notNullable()
     table.integer('user_id').unsigned().notNullable()
+    table.timestamps(false, true)
 
     table.unique(['name', 'task_id'])
 

@@ -29,6 +29,7 @@ describe('Attachments', () => {
       .send({
         name: 'file',
         format: 'jpg',
+        public_id: 'lmakmlkzm',
         url: 'https://machin.truc',
         task_id: task.id,
       })
@@ -56,6 +57,7 @@ describe('Attachments', () => {
       .post('/api/attachments')
       .send({
         format: 'jpg',
+        public_id: 'alzkjl',
         url: 'https://machin.truc',
         task_id: task.id,
       })

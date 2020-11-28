@@ -60,6 +60,11 @@ class TaskController {
           .orderBy('label_task.id', 'asc')
           .select('*')
 
+        const attachments = await knex('attachment_task')
+          .where('task_id', task.id)
+          .orderBy('created_at', 'asc')
+          .select('*')
+
         console.log('assignedMembers', assignedMembers)
         console.log('labels', labels)
 
@@ -68,6 +73,7 @@ class TaskController {
             ...task,
             assignedMembers: assignedMembers || [],
             labels: labels || [],
+            attachments: attachments || [],
           },
         })
       } else {

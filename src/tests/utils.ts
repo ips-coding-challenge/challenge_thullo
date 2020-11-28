@@ -122,6 +122,7 @@ export const createAttachment = async (
   task,
   name = 'file',
   url = 'https://machin.truc',
+  public_id = 'abcd',
   format = 'jpg'
 ) => {
   const [attachment] = await knex('attachment_task')
@@ -129,6 +130,7 @@ export const createAttachment = async (
       name,
       format,
       url,
+      public_id,
       task_id: task.id,
       user_id: user.id,
     })

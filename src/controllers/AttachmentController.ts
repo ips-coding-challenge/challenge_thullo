@@ -7,7 +7,8 @@ import { can, isAdmin, response, validationError } from '../utils/utils'
 const createSchema = Joi.object().keys({
   name: Joi.string().min(2).required(),
   url: Joi.string().uri().required(),
-  format: Joi.string().required(),
+  format: Joi.string(),
+  public_id: Joi.string().required(),
   task_id: Joi.number().required(),
 })
 
@@ -17,11 +18,15 @@ const deleteSchema = Joi.object().keys({
 })
 
 class AttachmentController {
+  /**
+   * create an attachment for a task
+   * @param ctx
+   */
   static async store(ctx: Context) {
     try {
       await createSchema.validateAsync(ctx.request.body)
 
-      const { name, url, format, task_id } = ctx.request.body
+      const { name, url, format, public_id, task_id } = ctx.request.body
 
       const [task] = await knex('tasks').where('id', task_id)
 
@@ -35,6 +40,7 @@ class AttachmentController {
             name,
             url,
             format,
+            public_id,
             task_id,
             user_id: ctx.state.user.id,
           })
@@ -61,6 +67,10 @@ class AttachmentController {
     }
   }
 
+  /**
+   * Delete an attachment from a task
+   * @param ctx
+   */
   static async delete(ctx: Context) {
     try {
       await deleteSchema.validateAsync(ctx.request.body)
