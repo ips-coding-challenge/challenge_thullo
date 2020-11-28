@@ -117,6 +117,26 @@ export const addMemberToTask = async (user, task) => {
   return assignedMember
 }
 
+export const createAttachment = async (
+  user,
+  task,
+  name = 'file',
+  url = 'https://machin.truc',
+  format = 'jpg'
+) => {
+  const [attachment] = await knex('attachment_task')
+    .insert({
+      name,
+      format,
+      url,
+      task_id: task.id,
+      user_id: user.id,
+    })
+    .returning('*')
+
+  return attachment
+}
+
 export const generateJwt = async (user) => {
   return jwt.sign(
     {
