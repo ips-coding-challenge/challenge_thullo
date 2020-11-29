@@ -93,8 +93,6 @@ class AttachmentController {
 
       const admin = await isAdmin(ctx, task.board_id)
 
-      console.log('admin', admin)
-
       if (attachment.user_id !== ctx.state.user.id && !admin) {
         return response(ctx, 403, 'Not allowed')
       }

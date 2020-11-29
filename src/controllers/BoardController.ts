@@ -101,7 +101,7 @@ class BoardController {
           .where({
             board_id: board.id,
           })
-          .select(userSelect())
+          .select([...userSelect(), 'board_user.role'])
 
         const [owner] = await knex('users')
           .where({
@@ -109,7 +109,9 @@ class BoardController {
           })
           .select(userSelect())
 
-        console.log('owner', owner)
+        // Add the role admin for the owner of the board
+        owner.role = 'admin'
+
         response(ctx, 200, {
           data: {
             ...board,
