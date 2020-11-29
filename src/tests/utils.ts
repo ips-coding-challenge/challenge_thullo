@@ -139,6 +139,18 @@ export const createAttachment = async (
   return attachment
 }
 
+export const createComment = async (content, user, task) => {
+  const [comment] = await knex('comments')
+    .insert({
+      content,
+      user_id: user.id,
+      task_id: task.id,
+    })
+    .returning('*')
+
+  return comment
+}
+
 export const generateJwt = async (user) => {
   return jwt.sign(
     {
