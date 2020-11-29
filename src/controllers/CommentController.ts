@@ -39,8 +39,10 @@ class CommentController {
           })
           .returning('*')
 
+        const [user] = await knex('users').where('id', ctx.state.user.id)
+
         response(ctx, 201, {
-          data: comment,
+          data: { ...comment, username: user.username, avatar: user.avatar },
         })
       } else {
         return response(ctx, 403, 'Not allowed')
@@ -80,8 +82,14 @@ class CommentController {
             .where('id', commentId)
             .returning('*')
 
+          const [user] = await knex('users').where('id', ctx.state.user.id)
+
           response(ctx, 200, {
-            data: updatedComment,
+            data: {
+              ...updatedComment,
+              username: user.username,
+              avatar: user.avatar,
+            },
           })
         }
       } else {

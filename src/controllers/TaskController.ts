@@ -65,8 +65,11 @@ class TaskController {
           .orderBy('created_at', 'asc')
           .select('*')
 
-        console.log('assignedMembers', assignedMembers)
-        console.log('labels', labels)
+        const comments = await knex('comments')
+          .innerJoin('users', 'users.id', '=', 'comments.user_id')
+          .where('task_id', task.id)
+          .orderBy('created_at', 'asc')
+          .select('comments.*', 'users.username', 'users.avatar')
 
         response(ctx, 200, {
           data: {
@@ -74,6 +77,7 @@ class TaskController {
             assignedMembers: assignedMembers || [],
             labels: labels || [],
             attachments: attachments || [],
+            comments: comments || [],
           },
         })
       } else {

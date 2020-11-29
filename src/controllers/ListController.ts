@@ -61,6 +61,12 @@ class ListController {
           .whereIn('attachment_task.task_id', tasksIds)
           .select('*')
 
+        // Get the comments
+
+        const commentsTask = await knex('comments')
+          .whereIn('task_id', tasksIds)
+          .select('*')
+
         lists.forEach((l) => {
           l.tasks = []
           tasks.map((task) => {
@@ -68,6 +74,7 @@ class ListController {
               let assignedMembers = []
               let labels = []
               let attachments = []
+              let comments = []
               assignedMembersToTask.forEach((m) => {
                 if (m.task_id === task.id) {
                   assignedMembers.push(m)
@@ -83,7 +90,18 @@ class ListController {
                   attachments.push(a)
                 }
               })
-              l.tasks.push({ ...task, assignedMembers, labels, attachments })
+              commentsTask.forEach((c) => {
+                if (c.task_id === task.id) {
+                  comments.push(c)
+                }
+              })
+              l.tasks.push({
+                ...task,
+                assignedMembers,
+                labels,
+                attachments,
+                comments,
+              })
             }
           })
         })
