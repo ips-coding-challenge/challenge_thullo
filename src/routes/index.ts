@@ -9,6 +9,7 @@ import assignmentRoutes from './assignment.routes'
 import labelRoutes from './label.routes'
 import labelTaskRoutes from './label_task.routes'
 import attachmentRoutes from './attachment.routes'
+import commentRoutes from './comment.routes'
 
 const router = new Router({
   prefix: '/api',
@@ -24,5 +25,6 @@ router.use(assignmentRoutes.routes())
 router.use(labelRoutes.routes())
 router.use(labelTaskRoutes.routes())
 router.use(attachmentRoutes.routes())
+router.use(commentRoutes.routes())
 
 export default router
