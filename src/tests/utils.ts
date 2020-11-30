@@ -40,11 +40,13 @@ export const createBoard = async (
 }
 
 export const createMember = async (user, board, role = 'user') => {
-  return await knex('board_user').insert({
-    board_id: board.id,
-    user_id: user.id,
-    role,
-  })
+  return await knex('board_user')
+    .insert({
+      board_id: board.id,
+      user_id: user.id,
+      role,
+    })
+    .returning('*')
 }
 
 export const createList = async (name, board) => {
