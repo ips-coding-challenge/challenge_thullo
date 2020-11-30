@@ -1,7 +1,13 @@
 import { Context } from 'koa'
 import Joi, { ValidationError } from '@hapi/joi'
 import { knex } from '../tests/setup'
-import { can, response, userSelect, validationError } from '../utils/utils'
+import {
+  can,
+  isAdmin,
+  response,
+  userSelect,
+  validationError,
+} from '../utils/utils'
 import { userInfo } from 'os'
 
 const createSchema = Joi.object().keys({
@@ -12,6 +18,7 @@ const createSchema = Joi.object().keys({
 
 const updateSchema = Joi.object().keys({
   visibility: Joi.string().valid('private', 'public').optional(),
+  description: Joi.string().min(2).optional(),
 })
 
 interface BoardInput {
@@ -176,11 +183,11 @@ class BoardController {
 
       console.log('data', data)
 
-      if (await can(ctx, boardId)) {
+      if (await isAdmin(ctx, boardId)) {
         const [board] = await knex('boards')
           .where('id', boardId)
           .update({
-            visibility: data.visibility,
+            ...data,
           })
           .returning('*')
 
