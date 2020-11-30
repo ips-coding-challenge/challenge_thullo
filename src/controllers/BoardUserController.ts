@@ -84,24 +84,52 @@ class BoardUserController {
       }
 
       if ((await isAdmin(ctx, board_id)) && ctx.state.user.id !== user_id) {
-        // await knex('board_user').where({ board_id, user_id }).delete()
-        // // Make sure we remove all the invitations from this user for this board
-        // // And the assignations
-        // await knex('invitations').where({ board_id, user_id }).delete()
-        const membersTaskAssignment = await knex('assignment_task')
-          .innerJoin('tasks', 'tasks.id', '=', 'assignment_task.task_id')
-          .where('assignment_task.user_id', user_id)
-          .select('assignment_task.*', 'tasks.board_id as board_id')
+        try {
+          await knex.transaction(async (trx) => {
+            // Make sure we remove all the data from that user in the board
+            // Invitations / Assignments / Attachments / Comments
+            await trx('board_user').where({ board_id, user_id }).delete()
 
-        const assignmentToDeleteIds = membersTaskAssignment
-          .filter((el) => el.board_id === board_id)
-          .map((el) => el.id)
+            await trx('invitations').where({ board_id, user_id }).delete()
 
-        console.log('assignmentToDeleteIds', assignmentToDeleteIds)
+            const assignmentsToDelete = await getElementsIdsToDelete(
+              trx,
+              'assignment_task',
+              user_id,
+              board_id
+            )
 
-        // await knex('assigment_task').whereIn('id', assignmentToDeleteIds).delete()
+            const commentsToDelete = await getElementsIdsToDelete(
+              trx,
+              'comments',
+              user_id,
+              board_id
+            )
+            const attachmentsToDelete = await getElementsIdsToDelete(
+              trx,
+              'attachment_task',
+              user_id,
+              board_id
+            )
+            // console.log('assignmentToDeleteIds', assignmentsToDelete)
+            // console.log('commentsToDelete', commentsToDelete)
+            // console.log('attachmentsToDelete', attachmentsToDelete)
 
-        response(ctx, 204, {})
+            await trx('assignment_task')
+              .whereIn('id', assignmentsToDelete)
+              .delete()
+
+            await trx('attachment_task')
+              .whereIn('id', attachmentsToDelete)
+              .delete()
+
+            await trx('comments').whereIn('id', commentsToDelete).delete()
+          })
+
+          response(ctx, 204, {})
+        } catch (e) {
+          console.log('Error deleting user from the board', e)
+        }
       } else {
         return response(ctx, 403, 'Not allowed')
       }
@@ -110,6 +138,23 @@ class BoardUserController {
       ctx.throw(400, 'Bad request')
     }
   }
+}
+
+const getElementsIdsToDelete = async (
+  trx,
+  table: string,
+  user_id: number,
+  board_id: number
+): Promise<Array<number>> => {
+  const elements = await trx(table)
+    .innerJoin('tasks', 'tasks.id', '=', `${table}.task_id`)
+    .where(`${table}.user_id`, user_id)
+    .select(`${table}.id`, 'tasks.board_id as board_id')
+
+  const elementsIds = elements
+    .filter((el) => el.board_id === board_id)
+    .map((el) => el.id)
+  return elementsIds
 }
 
 export default BoardUserController
