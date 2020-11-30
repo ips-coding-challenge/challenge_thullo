@@ -84,9 +84,22 @@ class BoardUserController {
       }
 
       if ((await isAdmin(ctx, board_id)) && ctx.state.user.id !== user_id) {
-        await knex('board_user').where({ board_id, user_id }).delete()
-        // Make sure we remove all the invitations from this user for this board
-        await knex('invitations').where({ board_id, user_id }).delete()
+        // await knex('board_user').where({ board_id, user_id }).delete()
+        // // Make sure we remove all the invitations from this user for this board
+        // // And the assignations
+        // await knex('invitations').where({ board_id, user_id }).delete()
+        const membersTaskAssignment = await knex('assignment_task')
+          .innerJoin('tasks', 'tasks.id', '=', 'assignment_task.task_id')
+          .where('assignment_task.user_id', user_id)
+          .select('assignment_task.*', 'tasks.board_id as board_id')
+
+        const assignmentToDeleteIds = membersTaskAssignment
+          .filter((el) => el.board_id === board_id)
+          .map((el) => el.id)
+
+        console.log('assignmentToDeleteIds', assignmentToDeleteIds)
+
+        // await knex('assigment_task').whereIn('id', assignmentToDeleteIds).delete()
 
         response(ctx, 204, {})
       } else {

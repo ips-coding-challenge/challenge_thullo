@@ -96,7 +96,10 @@ class BoardController {
   static async show(ctx: Context) {
     try {
       const { id } = ctx.params
-      const [board] = await knex('boards').where('id', id)
+      const [board] = await knex('boards')
+        .innerJoin('users', 'users.id', '=', 'boards.user_id')
+        .where('boards.id', id)
+        .select('boards.*', 'users.username', 'users.avatar')
 
       if (!board) {
         return response(ctx, 404, 'Board not found')
@@ -169,6 +172,10 @@ class BoardController {
     }
   }
 
+  /**
+   * Update a board
+   * @param ctx
+   */
   static async update(ctx: Context) {
     try {
       await updateSchema.validateAsync(ctx.request.body)
@@ -181,11 +188,9 @@ class BoardController {
         return response(ctx, 422, 'Invalid data')
       }
 
-      console.log('data', data)
-
       if (await isAdmin(ctx, boardId)) {
         const [board] = await knex('boards')
-          .where('id', boardId)
+          .where('boards.id', boardId)
           .update({
             ...data,
           })
