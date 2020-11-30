@@ -1,11 +1,16 @@
 import { Context } from 'koa'
 import Joi, { ValidationError } from '@hapi/joi'
-import { response, validationError } from '../utils/utils'
+import { isAdmin, response, validationError } from '../utils/utils'
 import { knex } from '../tests/setup'
 
 const createSchema = Joi.object().keys({
   board_id: Joi.number().required(),
   role: Joi.string().valid('user', 'admin').optional(),
+})
+
+const deleteSchema = Joi.object().keys({
+  board_id: Joi.number().required(),
+  user_id: Joi.number().required(),
 })
 
 enum Role {
@@ -59,6 +64,37 @@ class BoardUserController {
       } else {
         ctx.throw(400, 'Bad request')
       }
+    }
+  }
+
+  /**
+   * Delete a member from the board
+   * @param ctx
+   */
+  static async delete(ctx: Context) {
+    try {
+      await deleteSchema.validateAsync(ctx.request.body)
+
+      const { board_id, user_id } = ctx.request.body
+
+      const [member] = await knex('board_user').where({ board_id, user_id })
+
+      if (!member) {
+        return response(ctx, 404, 'Not found')
+      }
+
+      if ((await isAdmin(ctx, board_id)) && ctx.state.user.id !== user_id) {
+        await knex('board_user').where({ board_id, user_id }).delete()
+        // Make sure we remove all the invitations from this user for this board
+        await knex('invitations').where({ board_id, user_id }).delete()
+
+        response(ctx, 204, {})
+      } else {
+        return response(ctx, 403, 'Not allowed')
+      }
+    } catch (e) {
+      console.log('delete member error', e)
+      ctx.throw(400, 'Bad request')
     }
   }
 }
