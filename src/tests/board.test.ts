@@ -164,9 +164,67 @@ describe('Boards', () => {
     newBoard.visibility.should.equal('private')
   })
 
-  it('should throw validation error when creating a board', async () => {})
+  it('should update the description of the board if the user is the owner', async () => {
+    const user = await createUser()
+    const board = await createBoard(user, 'Board')
 
-  it('should delete a board', async () => {})
+    const res = await chai
+      .request(server)
+      .put(`/api/boards/${board.id}`)
+      .send({
+        description: 'description',
+      })
+      .set('Authorization', 'Bearer ' + (await generateJwt(user)))
+
+    res.status.should.equal(201)
+    res.body.data.description.should.equal('description')
+
+    const [newBoard] = await knex('boards').where('id', board.id)
+    newBoard.description.should.equal('description')
+  })
+
+  it('should update the description of the board if the user is an admin member', async () => {
+    const user = await createUser()
+    const member = await createUser('member', 'member@test.fr')
+    const board = await createBoard(user, 'Board')
+    await createMember(member, board, 'admin')
+
+    const res = await chai
+      .request(server)
+      .put(`/api/boards/${board.id}`)
+      .send({
+        description: 'description',
+      })
+      .set('Authorization', 'Bearer ' + (await generateJwt(member)))
+
+    res.status.should.equal(201)
+    res.body.data.description.should.equal('description')
+
+    const [newBoard] = await knex('boards').where('id', board.id)
+    newBoard.description.should.equal('description')
+  })
+
+  it('should not update the description of the board for a member who is not an admin', async () => {
+    const user = await createUser()
+    const member = await createUser('member', 'member@test.fr')
+
+    const board = await createBoard(user, 'Board')
+    await createMember(member, board, 'user')
+
+    const res = await chai
+      .request(server)
+      .put(`/api/boards/${board.id}`)
+      .send({
+        description: 'description',
+      })
+      .set('Authorization', 'Bearer ' + (await generateJwt(member)))
+
+    res.status.should.equal(403)
+    res.text.should.equal('Not allowed')
+
+    const [newBoard] = await knex('boards').where('id', board.id)
+    expect(newBoard.description).to.be.null
+  })
 
   afterEach(() => {
     return knex.migrate.rollback()
