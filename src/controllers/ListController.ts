@@ -64,8 +64,9 @@ class ListController {
         // Get the comments
 
         const commentsTask = await knex('comments')
+          .innerJoin('users', 'users.id', '=', 'comments.user_id')
           .whereIn('task_id', tasksIds)
-          .select('*')
+          .select('comments.*', 'users.username', 'users.avatar')
 
         lists.forEach((l) => {
           l.tasks = []
