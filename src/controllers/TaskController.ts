@@ -1,7 +1,13 @@
 import { Context } from 'koa'
 import Joi, { ValidationError } from '@hapi/joi'
 import { knex } from '../tests/setup'
-import { can, response, userSelect, validationError } from '../utils/utils'
+import {
+  can,
+  isAdmin,
+  response,
+  userSelect,
+  validationError,
+} from '../utils/utils'
 
 const createTaskSchema = Joi.object().keys({
   title: Joi.string().min(2).required(),
@@ -15,6 +21,11 @@ const patchTaskSchema = Joi.object().keys({
   title: Joi.string().min(2).optional(),
   description: Joi.string().min(2).optional(),
   cover: Joi.string().uri().optional(),
+})
+
+const deleteSchema = Joi.object().keys({
+  task_id: Joi.number().required(),
+  board_id: Joi.number().required(),
 })
 
 interface TaskCreateInput {
@@ -193,6 +204,37 @@ class TaskController {
       }
 
       ctx.throw(400, `Bad request`)
+    }
+  }
+
+  /**
+   * Delete a task
+   * @param ctx
+   */
+  static async delete(ctx: Context) {
+    try {
+      await deleteSchema.validateAsync(ctx.request.body)
+
+      const { task_id, board_id } = ctx.request.body
+
+      const [task] = await knex('tasks').where('id', task_id)
+
+      if (!task) {
+        return response(ctx, 404, 'Not Found')
+      }
+
+      if (
+        (await isAdmin(ctx, board_id)) ||
+        task.user_id === ctx.state.user.id
+      ) {
+        await knex('tasks').where('id', task_id).delete()
+
+        response(ctx, 204, {})
+      } else {
+        return response(ctx, 403, 'Not allowed')
+      }
+    } catch (e) {
+      console.log('Delete task error', e)
     }
   }
 }
