@@ -1,3 +1,4 @@
+import { expect } from 'chai'
 import { knex, server, chai } from './setup'
 import {
   createBoard,
@@ -5,6 +6,8 @@ import {
   createUser,
   createTask,
   generateJwt,
+  addMemberToTask,
+  createMember,
 } from './utils'
 
 describe('Tasks', () => {
@@ -218,6 +221,96 @@ describe('Tasks', () => {
       .set('Authorization', 'Bearer ' + (await generateJwt(another)))
 
     res.status.should.equal(403)
+  })
+
+  it('should delete a task', async () => {
+    const user = await createUser()
+    const board = await createBoard(user, 'Board')
+    const list = await createList('List', board)
+    const task = await createTask('Task 1', user, board, list)
+
+    const res = await chai
+      .request(server)
+      .delete(`/api/tasks`)
+      .send({
+        task_id: task.id,
+        board_id: board.id,
+      })
+      .set('Authorization', 'Bearer ' + (await generateJwt(user)))
+
+    res.status.should.equal(204)
+
+    const [taskDeleted] = await knex('tasks').where('id', task.id)
+    expect(taskDeleted).to.be.undefined
+  })
+
+  it('should delete a task and the associated resources', async () => {
+    const user = await createUser()
+    const board = await createBoard(user, 'Board')
+    const list = await createList('List', board)
+    const task = await createTask('Task 1', user, board, list)
+    await addMemberToTask(user, task)
+
+    const assignedMembers = await knex('assignment_task').where({
+      user_id: user.id,
+      task_id: task.id,
+    })
+
+    assignedMembers.length.should.equal(1)
+
+    const res = await chai
+      .request(server)
+      .delete(`/api/tasks`)
+      .send({
+        task_id: task.id,
+        board_id: board.id,
+      })
+      .set('Authorization', 'Bearer ' + (await generateJwt(user)))
+
+    res.status.should.equal(204)
+
+    const assignedMembersAfterTaskDeletion = await knex(
+      'assignment_task'
+    ).where({
+      user_id: user.id,
+      task_id: task.id,
+    })
+
+    assignedMembersAfterTaskDeletion.length.should.equal(0)
+  })
+
+  it('should only allow the owner of the task or an admin to delete the task', async () => {
+    const user = await createUser()
+    const another = await createUser('another', 'another@test.fr')
+    const memberAdmin = await createUser('memberAdmin', 'memberAdmin@test.fr')
+    const board = await createBoard(user, 'Board')
+    const list = await createList('List', board)
+    const task = await createTask('Task 1', user, board, list)
+    await createMember(another, board, 'user')
+    await createMember(memberAdmin, board, 'admin')
+
+    const res = await chai
+      .request(server)
+      .delete(`/api/tasks`)
+      .send({
+        task_id: task.id,
+        board_id: board.id,
+      })
+      .set('Authorization', 'Bearer ' + (await generateJwt(another)))
+
+    res.status.should.equal(403)
+    res.text.should.equal('Not allowed')
+
+    const res2 = await chai
+      .request(server)
+      .delete(`/api/tasks`)
+      .send({
+        task_id: task.id,
+        board_id: board.id,
+      })
+      .set('Authorization', 'Bearer ' + (await generateJwt(memberAdmin)))
+
+    res2.status.should.equal(204)
   })
 
   afterEach(() => {
