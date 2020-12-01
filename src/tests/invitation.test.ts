@@ -24,7 +24,7 @@ describe('Invitations', () => {
       .post('/api/invitations')
       .send({
         board_id: board.id,
-        username: another.username,
+        email: another.email,
       })
       .set('Authorization', 'Bearer ' + (await generateJwt(admin)))
 
@@ -43,7 +43,7 @@ describe('Invitations', () => {
       .post('/api/invitations')
       .send({
         board_id: board.id,
-        username: another.username,
+        email: another.email,
       })
       .set('Authorization', 'Bearer ' + (await generateJwt(member)))
 
@@ -55,7 +55,7 @@ describe('Invitations', () => {
       .post('/api/invitations')
       .send({
         board_id: board.id,
-        username: another.username,
+        email: another.email,
       })
       .set('Authorization', 'Bearer ' + (await generateJwt(admin)))
 
@@ -73,7 +73,7 @@ describe('Invitations', () => {
       .post('/api/invitations')
       .send({
         board_id: board.id,
-        username: another.username,
+        email: another.email,
       })
       .set('Authorization', 'Bearer ' + (await generateJwt(admin)))
 
@@ -96,7 +96,7 @@ describe('Invitations', () => {
       .post('/api/invitations')
       .send({
         board_id: board.id,
-        username: another.username,
+        email: another.email,
       })
       .set('Authorization', 'Bearer ' + (await generateJwt(admin)))
 
@@ -121,7 +121,7 @@ describe('Invitations', () => {
       .post('/api/invitations')
       .send({
         board_id: board.id,
-        username: another.username,
+        email: another.email,
       })
       .set('Authorization', 'Bearer ' + (await generateJwt(admin)))
 

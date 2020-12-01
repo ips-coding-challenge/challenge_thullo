@@ -6,7 +6,7 @@ import { nanoid } from 'nanoid'
 
 const createSchema = Joi.object().keys({
   board_id: Joi.number().required(),
-  username: Joi.string().required(),
+  email: Joi.string().email().required(),
 })
 
 class InvitationController {
@@ -53,7 +53,7 @@ class InvitationController {
     try {
       await createSchema.validateAsync(ctx.request.body)
 
-      const { board_id, username } = ctx.request.body
+      const { board_id, email } = ctx.request.body
 
       if (!(await isAdmin(ctx, board_id))) {
         return response(ctx, 403, 'Only an administrator can invite new member')
@@ -64,7 +64,7 @@ class InvitationController {
         return response(ctx, 404, 'Board not found')
       }
 
-      const [userToInvite] = await knex('users').where('username', username)
+      const [userToInvite] = await knex('users').where('email', email)
 
       if (!userToInvite) {
         return response(ctx, 404, 'User not found')
