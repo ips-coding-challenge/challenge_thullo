@@ -54,6 +54,7 @@ class ListController {
         const labelAssignedToTask = await knex('label_task')
           .innerJoin('labels', 'labels.id', '=', 'label_task.label_id')
           .whereIn('label_task.task_id', tasksIds)
+          .orderBy('labels.name', 'asc')
           .select('*')
 
         // Get the attachments
