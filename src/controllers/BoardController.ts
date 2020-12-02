@@ -53,7 +53,7 @@ class BoardController {
         })
         .orWhereIn('boards.id', boardsId)
         .orderBy('created_at', 'desc')
-        .select('boards.*', 'users.username')
+        .select('boards.*', 'users.username', 'users.avatar', 'users.email')
 
       const members = await knex('board_user')
         .innerJoin('users', 'users.id', '=', 'board_user.user_id')
@@ -72,7 +72,15 @@ class BoardController {
 
       // add members for each board
       boards.forEach((board) => {
+        const owner = {
+          id: board.user_id,
+          username: board.username,
+          avatar: board.avatar,
+          email: board.email,
+          board_id: board.id,
+        }
         board.members = []
+        board.members.push(owner)
         members.forEach((m) => {
           if (m.board_id === board.id) {
             board.members.push(m)
