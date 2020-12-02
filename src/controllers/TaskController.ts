@@ -37,12 +37,9 @@ interface TaskCreateInput {
 
 class TaskController {
   /**
-   * Fetch all tasks for a list
-   * Only use the ListController to fetch the tasks?
-   * @param {Context} ctx
+   * Fetch a specific task
+   * @param ctx
    */
-  static async index(ctx: Context) {}
-
   static async show(ctx: Context) {
     const { id } = ctx.params
 
@@ -55,41 +52,11 @@ class TaskController {
 
       if (await can(ctx, task.board_id)) {
         // Fetch the assignedMembers
-        const assignedMembers = await knex('assignment_task')
-          .innerJoin('users', 'users.id', '=', 'assignment_task.user_id')
-          .where('task_id', task.id)
-          .select([
-            'assignment_task.id as assignment_id',
-            'assignment_task.task_id as task_id',
-            ...userSelect(),
-          ])
 
-        // Fetch the labels
-        const labels = await knex('label_task')
-          .innerJoin('labels', 'labels.id', '=', 'label_task.label_id')
-          .where('task_id', task.id)
-          .orderBy('label_task.id', 'asc')
-          .select('*')
-
-        const attachments = await knex('attachment_task')
-          .where('task_id', task.id)
-          .orderBy('created_at', 'asc')
-          .select('*')
-
-        const comments = await knex('comments')
-          .innerJoin('users', 'users.id', '=', 'comments.user_id')
-          .where('task_id', task.id)
-          .orderBy('created_at', 'asc')
-          .select('comments.*', 'users.username', 'users.avatar')
+        const taskWithMeta = await taskWithMetadata(task)
 
         response(ctx, 200, {
-          data: {
-            ...task,
-            assignedMembers: assignedMembers || [],
-            labels: labels || [],
-            attachments: attachments || [],
-            comments: comments || [],
-          },
+          data: taskWithMeta,
         })
       } else {
         response(ctx, 403, 'Not allowed')
@@ -152,43 +119,10 @@ class TaskController {
             },
             ['*']
           )
-
-        // Fetch the assignedMembers
-        const assignedMembers = await knex('assignment_task')
-          .innerJoin('users', 'users.id', '=', 'assignment_task.user_id')
-          .where('task_id', task.id)
-          .select([
-            'assignment_task.id as assignment_id',
-            'assignment_task.task_id as task_id',
-            ...userSelect(),
-          ])
-
-        // Fetch the labels
-        const labels = await knex('label_task')
-          .innerJoin('labels', 'labels.id', '=', 'label_task.label_id')
-          .where('task_id', task.id)
-          .orderBy('label_task.id', 'asc')
-          .select('*')
-
-        const attachments = await knex('attachment_task')
-          .where('task_id', task.id)
-          .orderBy('created_at', 'asc')
-          .select('*')
-
-        const comments = await knex('comments')
-          .innerJoin('users', 'users.id', '=', 'comments.user_id')
-          .where('task_id', task.id)
-          .orderBy('created_at', 'asc')
-          .select('comments.*', 'users.username', 'users.avatar')
+        const updatedTask = await taskWithMetadata(task)
 
         response(ctx, 201, {
-          data: {
-            ...task,
-            assignedMembers: assignedMembers || [],
-            labels: labels || [],
-            attachments: attachments || [],
-            comments: comments || [],
-          },
+          data: updatedTask,
         })
       } else {
         return response(ctx, 403, 'Not allowed')
@@ -270,6 +204,48 @@ class TaskController {
     } catch (e) {
       console.log('Delete task error', e)
     }
+  }
+}
+
+/**
+ * helper to fetch task metadata
+ * @param task
+ */
+const taskWithMetadata = async (task) => {
+  // Fetch the assignedMembers
+  const assignedMembers = await knex('assignment_task')
+    .innerJoin('users', 'users.id', '=', 'assignment_task.user_id')
+    .where('task_id', task.id)
+    .select([
+      'assignment_task.id as assignment_id',
+      'assignment_task.task_id as task_id',
+      ...userSelect(),
+    ])
+
+  // Fetch the labels
+  const labels = await knex('label_task')
+    .innerJoin('labels', 'labels.id', '=', 'label_task.label_id')
+    .where('task_id', task.id)
+    .orderBy('label_task.id', 'asc')
+    .select('*')
+
+  const attachments = await knex('attachment_task')
+    .where('task_id', task.id)
+    .orderBy('created_at', 'asc')
+    .select('*')
+
+  const comments = await knex('comments')
+    .innerJoin('users', 'users.id', '=', 'comments.user_id')
+    .where('task_id', task.id)
+    .orderBy('created_at', 'asc')
+    .select('comments.*', 'users.username', 'users.avatar')
+
+  return {
+    ...task,
+    assignedMembers: assignedMembers || [],
+    labels: labels || [],
+    attachments: attachments || [],
+    comments: comments || [],
   }
 }
 
