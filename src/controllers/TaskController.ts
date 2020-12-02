@@ -85,7 +85,13 @@ class TaskController {
           .returning('*')
 
         response(ctx, 201, {
-          data: { ...task, assignedMembers: [], labels: [] },
+          data: {
+            ...task,
+            assignedMembers: [],
+            labels: [],
+            attachments: [],
+            comments: [],
+          },
         })
       } else {
         return response(ctx, 403, 'Not allowed')
