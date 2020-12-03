@@ -26,6 +26,7 @@ class UserController {
         .update({
           avatar,
         })
+        .where('id', ctx.state.user.id)
         .returning(userSelect())
 
       response(ctx, 201, {
