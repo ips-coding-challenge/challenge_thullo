@@ -1,8 +1,9 @@
 import { BaseContext, Context } from 'koa'
 import bcrypt from 'bcryptjs'
+import axios from 'axios'
 import jwt from 'jsonwebtoken'
 import knex from '../db/connection'
-import Joi, { ValidationError } from '@hapi/joi'
+import Joi, { valid, ValidationError } from '@hapi/joi'
 import { generateToken, response, validationError } from '../utils/utils'
 
 const loginSchema = Joi.object().keys({
@@ -126,6 +127,79 @@ class AuthController {
       })
     } catch (e) {
       ctx.throw(401, 'Unauthorized')
+    }
+  }
+
+  static async github(ctx: Context) {
+    const { code } = ctx.query
+
+    // Make a post request to get the user's infos
+    // https://github.com/login/oauth/access_token
+    try {
+      const tokenResponse = await axios.post(
+        'https://github.com/login/oauth/access_token',
+        {
+          client_id: process.env.GITHUB_CLIENT_ID,
+          client_secret: process.env.GITHUB_CLIENT_SECRET,
+          code,
+        },
+        {
+          headers: {
+            Accept: 'application/json',
+          },
+        }
+      )
+      // console.log('Res from oauth', tokenResponse.data)
+      const { access_token } = tokenResponse.data
+
+      // Get the user's informations
+      const response = await axios.get('https://api.github.com/user', {
+        headers: {
+          Authorization: `token ${access_token}`,
+        },
+      })
+
+      const emails = await axios.get(
+        'https://api.github.com/user/emails?scope=user:email',
+        {
+          headers: {
+            Accept: 'application/vnd.github.v3+json',
+            Authorization: `token ${access_token}`,
+          },
+        }
+      )
+
+      // Filter through all user emails and get the verified + primary
+      const validEmail = emails.data.filter((email: any) => {
+        return email.primary === true && email.verified === true
+      })
+
+      if (!validEmail) {
+        return ctx.throw(400, 'You need a valid email in order to register')
+      }
+
+      const { id, login, avatar_url } = response.data
+
+      const [githubUser] = await knex('users').where('github_id', id)
+      let token
+      if (!githubUser) {
+        const [newUser] = await knex('users')
+          .insert({
+            github_id: id,
+            avatar: avatar_url,
+            username: login,
+            email: validEmail[0].email,
+          })
+          .returning('*')
+        token = generateToken(newUser)
+      } else {
+        token = generateToken(githubUser)
+      }
+
+      ctx.redirect(`${process.env.FRONTEND_URL}?access_token=${token}`)
+    } catch (e) {
+      console.log('Error Github Oauth', e)
+      ctx.redirect(`${process.env.FRONTEND_URL}?error=${e.message}`)
     }
   }
 
