@@ -34,7 +34,7 @@ app.on('error', (err, ctx) => {
 app.use(morgan('combined'))
 app.use(
   cors({
-    origin: '*',
+    origin: process.env.FRONTEND_URL,
   })
 )
 app.use(bodyparser())
