@@ -3,13 +3,19 @@
   "version": "1.0.0",
   "main": "./src/app.ts",
   "license": "MIT",
+  "engines": {
+    "node": "^12.0.0",
+    "yarn": ">= 0.18.0"
+  },
   "scripts": {
     "dev": "cross-env NODE_ENV=development nodemon ./src/app.ts --ext ts",
-    "start": "cross-env NODE_ENV=production ts-node ./src/app.ts",
     "test": "cross-env NODE_ENV=test mocha -r ts-node/register --timeout 10000 ./src/tests/**/*.test.ts --exit",
     "mg": "cross-env NODE_ENV=development knex migrate:latest",
     "mg:rollback": "cross-env NODE_ENV=development knex migrate:rollback",
-    "mg:prod": "cross-env NODE_ENV=production knex migrate:latest"
+    "mg:prod": "cross-env NODE_ENV=production knex migrate:latest",
+    "compile": "shx rm -rf dist/ && tsc",
+    "heroku-postbuild": "yarn run compile",
+    "start": "cross-env NODE_ENV=production node dist/app.js"
   },
   "dependencies": {
     "@hapi/joi": "^17.1.1",
@@ -44,6 +50,7 @@
     "chai-http": "^4.3.0",
     "faker": "^5.1.0",
     "mocha": "^8.2.0",
-    "nodemon": "^2.0.6"
+    "nodemon": "^2.0.6",
+    "shx": "^0.3.3"
   }
 }

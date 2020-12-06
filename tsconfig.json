@@ -5,11 +5,12 @@
     "allowSyntheticDefaultImports": true,
     "target": "es5",
     "moduleResolution": "node",
-    "rootDir": "src",
-    "outDir": "dist",
+    "rootDir": "./src",
+    "outDir": "./dist",
     "sourceMap": true,
     "lib": [
       "esnext", "dom"
     ]
-  }
+  },
+  "exclude": ["src/tests"]
 }
