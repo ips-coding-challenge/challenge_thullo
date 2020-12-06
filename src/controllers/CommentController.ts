@@ -1,6 +1,6 @@
 import Joi, { ValidationError } from '@hapi/joi'
 import { Context } from 'koa'
-import { knex } from '../tests/setup'
+import knex from '../db/connection'
 import { can, isAdmin, response, validationError } from '../utils/utils'
 
 const createSchema = Joi.object().keys({
