@@ -1,7 +1,7 @@
-import { Context } from 'koa'
 import Joi, { ValidationError } from '@hapi/joi'
+import { Context } from 'koa'
+import knex from '../db/connection'
 import { isAdmin, response, validationError } from '../utils/utils'
-import { knex } from '../tests/setup'
 
 const createSchema = Joi.object().keys({
   board_id: Joi.number().required(),

@@ -1,6 +1,6 @@
-import { Context } from 'koa'
 import Joi, { ValidationError } from '@hapi/joi'
-import { knex } from '../tests/setup'
+import { Context } from 'koa'
+import knex from '../db/connection'
 import {
   can,
   isAdmin,
@@ -8,7 +8,6 @@ import {
   userSelect,
   validationError,
 } from '../utils/utils'
-import { userInfo } from 'os'
 
 const createSchema = Joi.object().keys({
   name: Joi.string().min(2).required(),

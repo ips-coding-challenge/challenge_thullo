@@ -1,9 +1,8 @@
-import { BaseContext, Context } from 'koa'
-import bcrypt from 'bcryptjs'
+import Joi, { ValidationError } from '@hapi/joi'
 import axios from 'axios'
-import jwt from 'jsonwebtoken'
+import bcrypt from 'bcryptjs'
+import { BaseContext, Context } from 'koa'
 import knex from '../db/connection'
-import Joi, { valid, ValidationError } from '@hapi/joi'
 import { generateToken, response, validationError } from '../utils/utils'
 
 const loginSchema = Joi.object().keys({

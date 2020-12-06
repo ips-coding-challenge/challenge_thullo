@@ -1,7 +1,6 @@
 // Update with your config settings.
-import path from 'path'
-import { config } from 'dotenv'
-config({
+const path = require('path')
+require('dotenv').config({
   path: path.join(__dirname, `.env.${process.env.NODE_ENV}`),
 })
 
