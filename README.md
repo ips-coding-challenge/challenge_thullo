@@ -11,3 +11,5 @@
 If you're interested taking the challenge, it's over there: https://devchallenges.io/challenges/wP0LbGgEeKhpFHUpPpDh
 
 ![Thullo challenge](https://firebasestorage.googleapis.com/v0/b/devchallenges-1234.appspot.com/o/challengesDesigns%2FThulloThumbnail.png?alt=media&token=e4ca3ada-be39-4452-b9ab-64b21f91b4c8)
+
+You can find the DbDiagram here: https://dbdiagram.io/d/5f26cd567543d301bf5d929e
