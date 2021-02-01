@@ -44,6 +44,7 @@ class AssignmentController {
             'users.id'
           )
           .where('users.id', user_id)
+          .andWhere('assignment_task.task_id', task_id)
           .select(['assignment_task.id as assignment_id', ...userSelect()])
 
         response(ctx, 201, {
