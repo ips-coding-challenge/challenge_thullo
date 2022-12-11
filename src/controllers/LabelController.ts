@@ -1,4 +1,4 @@
-import Joi, { ValidationError } from '@hapi/joi'
+import Joi from '@hapi/joi'
 import { Context } from 'koa'
 import knex from '../db/connection'
 import { can, response, validationError } from '../utils/utils'
@@ -40,7 +40,7 @@ class LabelController {
     try {
       await createSchema.validateAsync(ctx.request.body)
 
-      const { name, color, board_id } = ctx.request.body
+      const { name, color, board_id } = <any>ctx.request.body
 
       if (await can(ctx, board_id)) {
         const [label] = await knex('labels')
@@ -55,7 +55,7 @@ class LabelController {
       }
     } catch (e) {
       console.log('Label store error', e)
-      if (e instanceof ValidationError) {
+      if (e instanceof Joi.ValidationError) {
         ctx.throw(422, validationError(e))
       } else if (e.code === '23505') {
         ctx.throw(422, {

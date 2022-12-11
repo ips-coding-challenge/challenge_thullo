@@ -1,4 +1,4 @@
-import { ValidationError } from '@hapi/joi'
+import Joi from '@hapi/joi'
 import knex from '../db/connection'
 import { Context } from 'koa'
 import jwt from 'jsonwebtoken'
@@ -62,7 +62,7 @@ export const isAdmin = async (ctx: Context, boardId: number) => {
   return isOwner || isMember
 }
 
-export const validationError = (e: ValidationError) => {
+export const validationError = (e: Joi.ValidationError) => {
   return {
     field: e.details[0].path[0],
     message: e.details[0].message,

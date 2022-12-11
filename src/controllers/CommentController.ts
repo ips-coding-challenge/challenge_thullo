@@ -1,4 +1,4 @@
-import Joi, { ValidationError } from '@hapi/joi'
+import Joi from '@hapi/joi'
 import { Context } from 'koa'
 import knex from '../db/connection'
 import { can, isAdmin, response, validationError } from '../utils/utils'
@@ -22,7 +22,7 @@ class CommentController {
     try {
       await createSchema.validateAsync(ctx.request.body)
 
-      const { content, task_id } = ctx.request.body
+      const { content, task_id } = <any>ctx.request.body
 
       const [task] = await knex('tasks').where('id', task_id)
 
@@ -48,7 +48,7 @@ class CommentController {
         return response(ctx, 403, 'Not allowed')
       }
     } catch (e) {
-      if (e instanceof ValidationError) {
+      if (e instanceof Joi.ValidationError) {
         ctx.throw(422, validationError(e))
       } else {
         ctx.throw(400, 'Bad request')
@@ -60,7 +60,7 @@ class CommentController {
     try {
       await createSchema.validateAsync(ctx.request.body)
 
-      const { content, task_id } = ctx.request.body
+      const { content, task_id } = <any>ctx.request.body
 
       const [task] = await knex('tasks').where('id', task_id)
 
@@ -97,7 +97,7 @@ class CommentController {
       }
     } catch (e) {
       console.log('e', e)
-      if (e instanceof ValidationError) {
+      if (e instanceof Joi.ValidationError) {
         ctx.throw(422, validationError(e))
       } else {
         ctx.throw(400, 'Bad request')
@@ -109,7 +109,7 @@ class CommentController {
     try {
       await deleteSchema.validateAsync(ctx.request.body)
 
-      const { comment_id, task_id } = ctx.request.body
+      const { comment_id, task_id } = <any>ctx.request.body
 
       const [task] = await knex('tasks').where('id', task_id)
 
@@ -132,7 +132,7 @@ class CommentController {
       }
     } catch (e) {
       console.log('e', e)
-      if (e instanceof ValidationError) {
+      if (e instanceof Joi.ValidationError) {
         ctx.throw(422, validationError(e))
       } else {
         ctx.throw(400, 'Bad request')

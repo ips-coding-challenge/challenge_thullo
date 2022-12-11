@@ -1,5 +1,4 @@
 import knex from 'knex'
-console.log('NODE_ENV', process.env.NODE_ENV)
-const config = require('../../knexfile')[process.env.NODE_ENV || 'development']
+import * as Config from './knexfile'
 
-export default knex(config)
+export default knex(Config[process.env.NODE_ENV || 'development'])
