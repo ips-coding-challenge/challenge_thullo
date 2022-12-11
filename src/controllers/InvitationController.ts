@@ -1,6 +1,6 @@
 import knex from '../db/connection'
 import { Context } from 'koa'
-import Joi, { ValidationError } from '@hapi/joi'
+import Joi from '@hapi/joi'
 import { isAdmin, response, validationError } from '../utils/utils'
 import { nanoid } from 'nanoid'
 
@@ -53,7 +53,7 @@ class InvitationController {
     try {
       await createSchema.validateAsync(ctx.request.body)
 
-      const { board_id, email } = ctx.request.body
+      const { board_id, email } = <any>ctx.request.body
 
       if (!(await isAdmin(ctx, board_id))) {
         return response(ctx, 403, 'Only an administrator can invite new member')
@@ -108,7 +108,7 @@ class InvitationController {
       response(ctx, 204, {})
     } catch (e) {
       console.log('store invitation', e)
-      if (e instanceof ValidationError) {
+      if (e instanceof Joi.ValidationError) {
         ctx.throw(422, validationError(e))
       } else if (e.code === '23505') {
         ctx.throw(422, {

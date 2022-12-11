@@ -1,5 +1,5 @@
 import { Context } from 'koa'
-import Joi, { ValidationError } from '@hapi/joi'
+import Joi from '@hapi/joi'
 import knex from '../db/connection'
 import {
   can,
@@ -98,7 +98,7 @@ class TaskController {
       }
     } catch (e) {
       console.log('Store task error', e)
-      if (e instanceof ValidationError) {
+      if (e instanceof Joi.ValidationError) {
         ctx.throw(422, validationError(e))
       }
 
@@ -135,7 +135,7 @@ class TaskController {
       }
     } catch (e) {
       console.log('Store task error', e)
-      if (e instanceof ValidationError) {
+      if (e instanceof Joi.ValidationError) {
         ctx.throw(422, validationError(e))
       }
 
@@ -173,7 +173,7 @@ class TaskController {
       }
     } catch (e) {
       console.log('Store task error', e)
-      if (e instanceof ValidationError) {
+      if (e instanceof Joi.ValidationError) {
         ctx.throw(422, validationError(e))
       }
 
@@ -189,7 +189,7 @@ class TaskController {
     try {
       await deleteSchema.validateAsync(ctx.request.body)
 
-      const { task_id, board_id } = ctx.request.body
+      const { task_id, board_id } = <any>ctx.request.body
 
       const [task] = await knex('tasks').where('id', task_id)
 

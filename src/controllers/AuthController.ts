@@ -1,4 +1,4 @@
-import Joi, { ValidationError } from '@hapi/joi'
+import Joi from '@hapi/joi'
 import axios from 'axios'
 import bcrypt from 'bcryptjs'
 import { BaseContext, Context } from 'koa'
@@ -61,7 +61,7 @@ class AuthController {
         return response(ctx, 400, 'Invalid credentials')
       }
     } catch (e) {
-      if (e instanceof ValidationError) {
+      if (e instanceof Joi.ValidationError) {
         ctx.throw(422, validationError(e))
       } else {
         ctx.throw(400, 'Bad Request')
@@ -98,7 +98,7 @@ class AuthController {
       })
     } catch (e) {
       console.log('e', e)
-      if (e instanceof ValidationError) {
+      if (e instanceof Joi.ValidationError) {
         ctx.throw(422, validationError(e))
       } else if (e.code === '23505') {
         const field = e.detail.includes('username') ? 'username' : 'email'

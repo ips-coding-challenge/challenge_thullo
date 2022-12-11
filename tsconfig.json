@@ -1,16 +1,15 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "CommonJS",
     "esModuleInterop": true,
+    "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
-    "target": "es5",
-    "moduleResolution": "node",
-    "rootDir": "./src",
-    "outDir": "./dist",
-    "sourceMap": true,
-    "lib": [
-      "esnext", "dom"
-    ]
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "lib": ["ES6"]
   },
-  "exclude": ["src/tests"]
+  "exclude": ["src/tests", "node_modules"]
 }

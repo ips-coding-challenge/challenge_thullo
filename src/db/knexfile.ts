@@ -1,7 +1,12 @@
-// Update with your config settings.
-const path = require('path')
+import { Knex } from 'knex'
+import * as path from 'path'
+
+const envPath = path.join(__dirname, `../../.env.${process.env.NODE_ENV}`)
+
+console.log({ envPath })
+
 require('dotenv').config({
-  path: path.join(__dirname, `.env.${process.env.NODE_ENV}`),
+  path: envPath,
 })
 
 module.exports = {
@@ -12,16 +17,17 @@ module.exports = {
       database: process.env.DB_NAME,
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
+      port: process.env.DB_PORT || 5433,
     },
     pool: {
       min: 2,
       max: 10,
     },
     migrations: {
-      directory: path.join(__dirname, 'src', 'db', 'migrations'),
+      directory: path.join(__dirname, 'migrations'),
     },
     seeds: {
-      directory: path.join(__dirname, 'src', 'db', 'seeds'),
+      directory: path.join(__dirname, 'seeds'),
     },
   },
 
@@ -32,6 +38,7 @@ module.exports = {
       database: process.env.DB_NAME,
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
+      port: process.env.DB_PORT || 5432,
       ssl: {
         ssl: true,
         rejectUnauthorized: false,
@@ -42,10 +49,10 @@ module.exports = {
       max: 10,
     },
     migrations: {
-      directory: path.join(__dirname, 'src', 'db', 'migrations'),
+      directory: path.join(__dirname, 'migrations'),
     },
     seeds: {
-      directory: path.join(__dirname, 'src', 'db', 'seeds'),
+      directory: path.join(__dirname, 'seeds'),
     },
   },
 
@@ -56,16 +63,17 @@ module.exports = {
       database: process.env.DB_NAME,
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
+      port: process.env.DB_PORT || 5433,
     },
     pool: {
       min: 2,
       max: 10,
     },
     migrations: {
-      directory: path.join(__dirname, 'src', 'db', 'migrations'),
+      directory: path.join(__dirname, 'migrations'),
     },
     seeds: {
-      directory: path.join(__dirname, 'src', 'db', 'seeds'),
+      directory: path.join(__dirname, 'seeds'),
     },
   },
-}
+} as Knex.Config

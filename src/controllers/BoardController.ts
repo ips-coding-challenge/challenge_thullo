@@ -1,4 +1,4 @@
-import Joi, { ValidationError } from '@hapi/joi'
+import Joi from '@hapi/joi'
 import { Context } from 'koa'
 import knex from '../db/connection'
 import {
@@ -166,7 +166,7 @@ class BoardController {
       })
     } catch (e) {
       console.log(`E`, e)
-      if (e instanceof ValidationError) {
+      if (e instanceof Joi.ValidationError) {
         ctx.throw(422, validationError(e))
       } else if (e.code === '23505') {
         ctx.throw(422, {
@@ -211,7 +211,7 @@ class BoardController {
       }
     } catch (e) {
       console.log(`E`, e)
-      if (e instanceof ValidationError) {
+      if (e instanceof Joi.ValidationError) {
         ctx.throw(422, validationError(e))
       } else if (e.code === '23505') {
         ctx.throw(422, {

@@ -1,4 +1,4 @@
-import Joi, { ValidationError } from '@hapi/joi'
+import Joi from '@hapi/joi'
 import { Context } from 'koa'
 import knex from '../db/connection'
 import { can, isAdmin, response, validationError } from '../utils/utils'
@@ -25,7 +25,7 @@ class AttachmentController {
     try {
       await createSchema.validateAsync(ctx.request.body)
 
-      const { name, url, format, public_id, task_id } = ctx.request.body
+      const { name, url, format, public_id, task_id } = <any>ctx.request.body
 
       const [task] = await knex('tasks').where('id', task_id)
 
@@ -53,7 +53,7 @@ class AttachmentController {
       }
     } catch (e) {
       console.log('e', e)
-      if (e instanceof ValidationError) {
+      if (e instanceof Joi.ValidationError) {
         ctx.throw(422, validationError(e))
       } else if (e.code === '23505') {
         ctx.throw(422, {
@@ -74,7 +74,7 @@ class AttachmentController {
     try {
       await deleteSchema.validateAsync(ctx.request.body)
 
-      const { attachment_id, task_id } = ctx.request.body
+      const { attachment_id, task_id } = <any>ctx.request.body
 
       const [attachment] = await knex('attachment_task').where(
         'id',

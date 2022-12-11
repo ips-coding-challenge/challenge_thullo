@@ -1,12 +1,13 @@
-import path from 'path'
+import * as path from 'path'
 import Koa, { BaseContext, Next } from 'koa'
 import cors from '@koa/cors'
 import morgan from 'koa-morgan'
-import { config } from 'dotenv'
+import * as dotenv from 'dotenv'
 import bodyparser from 'koa-bodyparser'
 import router from './routes'
 import { RouterContext } from '@koa/router'
-config({
+
+dotenv.config({
   path: path.join(
     __dirname,
     `../.env.${process.env.NODE_ENV || 'development'}`

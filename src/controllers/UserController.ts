@@ -1,4 +1,4 @@
-import Joi, { ValidationError } from '@hapi/joi'
+import Joi from '@hapi/joi'
 import knex from '../db/connection'
 import { Context } from 'koa'
 import { response, userSelect, validationError } from '../utils/utils'
@@ -14,7 +14,7 @@ class UserController {
     try {
       await updateSchema.validateAsync(ctx.request.body)
 
-      const { avatar } = ctx.request.body
+      const { avatar } = <any>ctx.request.body
 
       const [user] = await knex('users').where('id', ctx.state.user.id)
 
@@ -33,7 +33,7 @@ class UserController {
         data: updatedUser,
       })
     } catch (e) {
-      if (e instanceof ValidationError) {
+      if (e instanceof Joi.ValidationError) {
         ctx.throw(422, validationError(e))
       } else {
         ctx.throw(400, 'Bad request')

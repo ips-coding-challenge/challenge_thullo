@@ -15,10 +15,10 @@ interface TokenData {
 const middleware = async function jwt(ctx: Context, next: Next) {
   //Grab the token
   const token = extractJwtToken(ctx)
+
   try {
-    const decoded: TokenData = <TokenData>(
-      jsonwebtoken.verify(token, process.env.JWT_SECRET)
-    )
+    if (!token) return response(ctx, 401, 'Token missing')
+    const decoded = <any>jsonwebtoken.verify(token, process.env.JWT_SECRET)
 
     console.log('decoded', decoded)
 

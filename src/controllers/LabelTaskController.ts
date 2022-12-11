@@ -1,4 +1,4 @@
-import Joi, { ValidationError } from '@hapi/joi'
+import Joi from '@hapi/joi'
 import { Context } from 'koa'
 import knex from '../db/connection'
 import { can, response, validationError } from '../utils/utils'
@@ -17,7 +17,7 @@ class LabelTaskController {
     try {
       await createSchema.validateAsync(ctx.request.body)
 
-      const { task_id, label_id } = ctx.request.body
+      const { task_id, label_id } = <any>ctx.request.body
 
       const [task] = await knex('tasks').where('id', task_id)
 
@@ -43,7 +43,7 @@ class LabelTaskController {
       }
     } catch (e) {
       console.log('Add a label to a task error', e)
-      if (e instanceof ValidationError) {
+      if (e instanceof Joi.ValidationError) {
         ctx.throw(422, validationError(e))
       } else if (e.code === '23505') {
         ctx.throw(422, {
@@ -60,7 +60,7 @@ class LabelTaskController {
     try {
       await createSchema.validateAsync(ctx.request.body)
 
-      const { task_id, label_id } = ctx.request.body
+      const { task_id, label_id } = <any>ctx.request.body
 
       const [task] = await knex('tasks').where('id', task_id)
 

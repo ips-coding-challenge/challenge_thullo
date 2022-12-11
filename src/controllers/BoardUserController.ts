@@ -1,4 +1,4 @@
-import Joi, { ValidationError } from '@hapi/joi'
+import Joi from '@hapi/joi'
 import { Context } from 'koa'
 import knex from '../db/connection'
 import { isAdmin, response, validationError } from '../utils/utils'
@@ -57,7 +57,7 @@ class BoardUserController {
       })
     } catch (e) {
       console.log('E', e)
-      if (e instanceof ValidationError) {
+      if (e instanceof Joi.ValidationError) {
         ctx.throw(422, validationError(e))
       } else if (e.code === '23505') {
         ctx.throw(422, 'This user is already a member of the board')
@@ -75,7 +75,7 @@ class BoardUserController {
     try {
       await deleteSchema.validateAsync(ctx.request.body)
 
-      const { board_id, user_id } = ctx.request.body
+      const { board_id, user_id } = <any>ctx.request.body
 
       const [member] = await knex('board_user').where({ board_id, user_id })
 

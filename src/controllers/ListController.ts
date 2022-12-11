@@ -1,5 +1,5 @@
 import { Context } from 'koa'
-import Joi, { ValidationError } from '@hapi/joi'
+import Joi from '@hapi/joi'
 import knex from '../db/connection'
 import { can, response, userSelect, validationError } from '../utils/utils'
 
@@ -26,7 +26,7 @@ class ListController {
         return response(ctx, 400, 'board_id is missing')
       }
 
-      if (await can(ctx, board_id)) {
+      if (await can(ctx, +board_id)) {
         const lists = await knex('lists')
           .where({
             board_id: +board_id,
@@ -153,7 +153,7 @@ class ListController {
       }
     } catch (e) {
       console.log('Store list error', e)
-      if (e instanceof ValidationError) {
+      if (e instanceof Joi.ValidationError) {
         ctx.throw(422, validationError(e))
       } else if (e.code === '23505') {
         ctx.throw(422, {
@@ -201,7 +201,7 @@ class ListController {
       }
     } catch (e) {
       console.log('Store list error', e)
-      if (e instanceof ValidationError) {
+      if (e instanceof Joi.ValidationError) {
         ctx.throw(422, validationError(e))
       } else if (e.code === '23505') {
         ctx.throw(422, {
