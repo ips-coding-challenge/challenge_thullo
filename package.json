@@ -11,6 +11,8 @@
     "mg:prod": "cross-env NODE_ENV=production knex migrate:latest",
     "compile": "shx rm -rf dist/ && tsc",
     "heroku-postbuild": "yarn run compile",
+    "build": "shx rm -rf dist/ && tsc",
+    "postbuild": "NODE_ENV=production ./node_modules/.bin/knex --knexfile src/db/knexfile.ts migrate:latest",
     "start": "cross-env NODE_ENV=production node dist/app.js"
   },
   "dependencies": {
