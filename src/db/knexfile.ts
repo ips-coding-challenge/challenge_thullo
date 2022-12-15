@@ -4,6 +4,7 @@ import * as path from 'path'
 const envPath = path.join(__dirname, `../../.env.${process.env.NODE_ENV}`)
 
 console.log({ envPath })
+console.log('db_host', process.env.DB_HOST)
 
 require('dotenv').config({
   path: envPath,
